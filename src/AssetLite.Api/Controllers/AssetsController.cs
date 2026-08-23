@@ -92,6 +92,44 @@ public sealed class AssetsController(RequestDispatcher dispatcher, IAssetLabelSe
         return From(result, asset => CreatedAtAction(nameof(GetByTag), new { tag = asset.Tag }, asset));
     }
 
+    /// <summary>
+    /// Replaces an existing asset's descriptive details (name, specs, notes, category, condition,
+    /// purchase data). The tag, office, status and assignment history are managed by their own
+    /// endpoints; disposed assets are immutable.
+    /// </summary>
+    /// <param name="tag">Canonical asset tag.</param>
+    /// <param name="request">The new asset details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    [HttpPut("{tag}")]
+    [ProducesResponseType(typeof(AssetDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Update(string tag, [FromBody] UpdateAssetRequest request, CancellationToken cancellationToken)
+    {
+        var assetId = await ResolveAssetIdAsync(tag, cancellationToken);
+        if (assetId.IsError)
+        {
+            return Problem(assetId.Errors);
+        }
+
+        var command = new UpdateAssetCommand(
+            assetId.Value,
+            new CategoryId(request.CategoryId),
+            request.Name,
+            request.Condition,
+            request.Manufacturer,
+            request.Model,
+            request.SerialNumber,
+            request.PurchaseDate,
+            request.PurchaseCost,
+            request.Currency,
+            request.Notes);
+
+        var result = await Dispatcher.CommandAsync<UpdateAssetCommand, AssetDetailDto>(command, cancellationToken);
+        return From(result, Ok);
+    }
+
     /// <summary>Assigns an asset to a person (or reassigns when already assigned).</summary>
     /// <param name="tag">Canonical asset tag.</param>
     /// <param name="request">Assignee details.</param>
@@ -297,6 +335,29 @@ public sealed record RegisterAssetRequest(
 /// <param name="AssigneeName">Assignee display name.</param>
 /// <param name="AssigneeEmail">Assignee email address.</param>
 public sealed record AssignAssetRequest(string AssigneeName, string AssigneeEmail);
+
+/// <summary>Request body for replacing an asset's descriptive details.</summary>
+/// <param name="CategoryId">New category id (must exist).</param>
+/// <param name="Name">New display name.</param>
+/// <param name="Condition">New physical condition (numeric or name, e.g. 1 or "New").</param>
+/// <param name="Manufacturer">New optional manufacturer.</param>
+/// <param name="Model">New optional model.</param>
+/// <param name="SerialNumber">New optional serial number.</param>
+/// <param name="PurchaseDate">New optional purchase date (not in the future).</param>
+/// <param name="PurchaseCost">New optional purchase cost (non-negative).</param>
+/// <param name="Currency">Optional 3-letter ISO 4217 code; defaults to USD.</param>
+/// <param name="Notes">New optional free-form notes.</param>
+public sealed record UpdateAssetRequest(
+    Guid CategoryId,
+    string Name,
+    AssetCondition Condition,
+    string? Manufacturer = null,
+    string? Model = null,
+    string? SerialNumber = null,
+    DateOnly? PurchaseDate = null,
+    decimal? PurchaseCost = null,
+    string? Currency = null,
+    string? Notes = null);
 
 /// <summary>Request body for transferring an asset.</summary>
 /// <param name="TargetOfficeId">The destination office id.</param>
