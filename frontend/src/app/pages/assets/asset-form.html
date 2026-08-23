@@ -1,0 +1,229 @@
+<nav class="flex items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+  <a routerLink="/assets" class="font-medium text-primary-700 hover:underline">Assets</a>
+  <span aria-hidden="true">/</span>
+  <span class="text-slate-600">Register new asset</span>
+</nav>
+
+<div class="mt-2 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Register new asset</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      The tag is allocated automatically (AST-000001…); new assets start In stock.
+    </p>
+  </div>
+  <a routerLink="/assets" class="btn btn-ghost">Back to assets</a>
+</div>
+
+<!-- Missing reference data (no offices/categories reachable) -->
+@if (referenceFailed()) {
+  <section class="card mt-6 border-amber-200 bg-amber-50/70 p-5" role="alert">
+    <h2 class="text-sm font-semibold text-amber-800">Offices or categories unavailable</h2>
+    <p class="mt-1 text-sm text-amber-700">
+      An asset needs an office and a category. Make sure the AssetLite API is running
+      (dev: http://localhost:5060) and that at least one office and category exist.
+    </p>
+    <a routerLink="/offices" class="btn mt-3">Manage offices</a>
+    <a routerLink="/categories" class="btn mt-3 ml-2">Manage categories</a>
+  </section>
+}
+
+<!-- Problem panel -->
+@if (formError(); as problem) {
+  <section class="card mt-6 border-rose-200 bg-rose-50/60 p-5" role="alert">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 class="text-sm font-semibold text-rose-700">{{ problem.title }}</h2>
+        <ul class="mt-1 list-inside list-disc text-sm text-rose-600">
+          @for (message of problem.messages; track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      </div>
+      <button type="button" class="btn btn-ghost px-2 text-rose-700" (click)="dismissError()" aria-label="Dismiss error">✕</button>
+    </div>
+  </section>
+}
+
+<form class="card mt-6 grid gap-5 p-6" (ngSubmit)="submit()">
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label class="label" for="new-name">Name *</label>
+      <input
+        id="new-name"
+        type="text"
+        class="input w-full"
+        placeholder="e.g. MacBook Pro 14&quot; M4"
+        autocomplete="off"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+        [class.border-rose-400]="errorFor('Name')"
+        [attr.aria-invalid]="errorFor('Name') ? true : null"
+      />
+      @if (errorFor('Name'); as message) {
+        <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+      }
+    </div>
+
+    <div>
+      <label class="label" for="new-category">Category *</label>
+      <select
+        id="new-category"
+        class="select w-full"
+        [value]="categoryId()"
+        (change)="categoryId.set($any($event.target).value)"
+        [class.border-rose-400]="errorFor('CategoryId')"
+      >
+        <option value="">Pick a category…</option>
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+      @if (errorFor('CategoryId'); as message) {
+        <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+      }
+    </div>
+
+    <div>
+      <label class="label" for="new-condition">Condition *</label>
+      <select
+        id="new-condition"
+        class="select w-full"
+        [value]="condition()"
+        (change)="condition.set($any($event.target).value)"
+      >
+        @for (conditionOption of conditions; track conditionOption) {
+          <option [value]="conditionOption">{{ conditionOption }}</option>
+        }
+      </select>
+      @if (errorFor('Condition'); as message) {
+        <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+      }
+    </div>
+
+    <div class="sm:col-span-2">
+      <label class="label" for="new-office">Office *</label>
+      <select
+        id="new-office"
+        class="select w-full"
+        [value]="officeId()"
+        (change)="officeId.set($any($event.target).value)"
+        [class.border-rose-400]="errorFor('OfficeId')"
+      >
+        <option value="">Pick an office…</option>
+        @for (option of flatOffices(); track option.office.id) {
+          <option [value]="option.office.id">
+            @for (d of depthDashes(option.depth); track $index) { – }{{ option.office.name }} ({{ option.office.code }})
+          </option>
+        }
+      </select>
+      @if (errorFor('OfficeId'); as message) {
+        <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+      }
+    </div>
+
+    <div>
+      <label class="label" for="new-manufacturer">Manufacturer</label>
+      <input
+        id="new-manufacturer"
+        type="text"
+        class="input w-full"
+        placeholder="e.g. Apple"
+        autocomplete="off"
+        [value]="manufacturer()"
+        (input)="manufacturer.set($any($event.target).value)"
+      />
+    </div>
+
+    <div>
+      <label class="label" for="new-model">Model</label>
+      <input
+        id="new-model"
+        type="text"
+        class="input w-full"
+        placeholder="e.g. MBP14/M4/16"
+        autocomplete="off"
+        [value]="model()"
+        (input)="model.set($any($event.target).value)"
+      />
+    </div>
+
+    <div>
+      <label class="label" for="new-serial">Serial number</label>
+      <input
+        id="new-serial"
+        type="text"
+        class="input w-full font-mono"
+        placeholder="e.g. C02XK1ABJGH5"
+        autocomplete="off"
+        [value]="serialNumber()"
+        (input)="serialNumber.set($any($event.target).value)"
+      />
+    </div>
+
+    <div class="grid grid-cols-3 gap-3">
+      <div class="col-span-2">
+        <label class="label" for="new-purchase-date">Purchase date</label>
+        <input
+          id="new-purchase-date"
+          type="date"
+          class="input w-full"
+          [value]="purchaseDate()"
+          (change)="purchaseDate.set($any($event.target).value)"
+          [class.border-rose-400]="errorFor('PurchaseDate')"
+        />
+        @if (errorFor('PurchaseDate'); as message) {
+          <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+        }
+      </div>
+      <div>
+        <label class="label" for="new-currency">Currency</label>
+        <select id="new-currency" class="select w-full" [value]="currency()" (change)="currency.set($any($event.target).value)">
+          @for (code of currencies; track code) {
+            <option [value]="code">{{ code }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="label" for="new-cost">Purchase cost</label>
+      <input
+        id="new-cost"
+        type="number"
+        min="0"
+        step="0.01"
+        class="input w-full tnums"
+        placeholder="e.g. 2399.00"
+        [value]="purchaseCost()"
+        (input)="purchaseCost.set($any($event.target).value)"
+        [class.border-rose-400]="errorFor('PurchaseCost')"
+      />
+      @if (errorFor('PurchaseCost'); as message) {
+        <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+      }
+    </div>
+  </div>
+
+  <div>
+    <label class="label" for="new-notes">Notes</label>
+    <textarea
+      id="new-notes"
+      class="input w-full"
+      rows="3"
+      placeholder="Anything worth knowing about this asset…"
+      [value]="notes()"
+      (input)="notes.set($any($event.target).value)"
+    ></textarea>
+    @if (errorFor('Notes'); as message) {
+      <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+    }
+  </div>
+
+  <div class="flex items-center gap-2 border-t border-slate-100 pt-4">
+    <button type="submit" class="btn btn-primary" [disabled]="!canSubmit()">
+      @if (submitting()) { Registering… } @else { Register asset }
+    </button>
+    <a routerLink="/assets" class="btn btn-ghost">Cancel</a>
+    <p class="ml-auto text-xs text-slate-400">* required</p>
+  </div>
+</form>
