@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+ * AssetLite design tokens — light professional ops / asset-console theme.
+ * Neutrals: slate. Primary accent: sky-600. Status palette:
+ *   emerald = InStock, sky = Assigned, amber = Maintenance,
+ *   slate   = Retired, rose = Disposed.
+ * Fonts stay on the system stack (fast, no external fetches).
+ * ------------------------------------------------------------------------- */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+
+  /* Primary accent (sky) exposed as first-class `primary-*` utilities. */
+  --color-primary-50: var(--color-sky-50);
+  --color-primary-100: var(--color-sky-100);
+  --color-primary-200: var(--color-sky-200);
+  --color-primary-300: var(--color-sky-300);
+  --color-primary-400: var(--color-sky-400);
+  --color-primary-500: var(--color-sky-500);
+  --color-primary-600: var(--color-sky-600);
+  --color-primary-700: var(--color-sky-700);
+  --color-primary-800: var(--color-sky-800);
+  --color-primary-900: var(--color-sky-900);
+
+  /* Semantic status tokens. */
+  --color-status-in-stock: var(--color-emerald-600);
+  --color-status-assigned: var(--color-sky-600);
+  --color-status-maintenance: var(--color-amber-500);
+  --color-status-retired: var(--color-slate-500);
+  --color-status-disposed: var(--color-rose-600);
+
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-900;
+  }
+
+  /* Numeric columns should always line up. */
+  .tnums,
+  .table-nums {
+    @apply tabular-nums;
+  }
+}
+
+@layer components {
+  /* --- Buttons ---------------------------------------------------------- */
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-300 bg-white
+      px-3 py-1.5 text-sm font-medium text-slate-700 shadow-xs transition-colors
+      hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600
+      disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply border-primary-600 bg-primary-600 text-white hover:bg-primary-700;
+  }
+
+  .btn-ghost {
+    @apply border-transparent bg-transparent shadow-none hover:bg-slate-100;
+  }
+
+  /* --- Cards ------------------------------------------------------------ */
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-card;
+  }
+
+  .card-header {
+    @apply border-b border-slate-200 px-5 py-4;
+  }
+
+  .card-title {
+    @apply text-sm font-semibold tracking-wide text-slate-500 uppercase;
+  }
+
+  /* --- Badges ----------------------------------------------------------- */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium
+      ring-1 ring-inset whitespace-nowrap;
+  }
+
+  .badge-in-stock {
+    @apply bg-emerald-50 text-emerald-700 ring-emerald-600/20;
+  }
+
+  .badge-assigned {
+    @apply bg-sky-50 text-sky-700 ring-sky-600/20;
+  }
+
+  .badge-maintenance {
+    @apply bg-amber-50 text-amber-700 ring-amber-600/20;
+  }
+
+  .badge-retired {
+    @apply bg-slate-100 text-slate-600 ring-slate-500/20;
+  }
+
+  .badge-disposed {
+    @apply bg-rose-50 text-rose-700 ring-rose-600/20;
+  }
+
+  .badge-neutral {
+    @apply bg-slate-100 text-slate-700 ring-slate-400/20;
+  }
+
+  .badge-dot {
+    @apply size-1.5 rounded-full bg-current opacity-70;
+  }
+
+  /* --- Forms ------------------------------------------------------------ */
+  .input,
+  .select {
+    @apply rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 shadow-xs
+      placeholder:text-slate-400 focus:border-primary-500 focus:outline-2 focus:outline-offset-0
+      focus:outline-primary-600/40 disabled:cursor-not-allowed disabled:bg-slate-50;
+  }
+
+  .label {
+    @apply mb-1 block text-xs font-medium text-slate-600;
+  }
+
+  /* --- Tables ----------------------------------------------------------- */
+  .table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .table thead th {
+    @apply border-b border-slate-200 bg-slate-50/80 px-4 py-2.5 text-left text-xs font-semibold
+      tracking-wide text-slate-500 uppercase;
+  }
+
+  .table tbody td {
+    @apply border-b border-slate-100 px-4 py-2.5 align-middle text-slate-700;
+  }
+
+  .table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .table-hover tbody tr {
+    @apply transition-colors hover:bg-primary-50/40;
+  }
+
+  /* --- Navigation ------------------------------------------------------- */
+  .nav-link {
+    @apply flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap
+      text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  .nav-link-active {
+    @apply bg-primary-50 text-primary-700 hover:bg-primary-50 hover:text-primary-700;
+  }
+
+  /* --- Loading shimmer --------------------------------------------------- */
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-slate-200/80;
+  }
+
+  .skeleton::after {
+    @apply absolute inset-0 content-[''];
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0) 0,
+      rgb(255 255 255 / 0.55) 50%,
+      rgb(255 255 255 / 0) 100%
+    );
+    animation: shimmer 1.6s infinite;
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}

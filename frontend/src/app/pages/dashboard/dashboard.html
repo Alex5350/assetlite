@@ -1,0 +1,140 @@
+<div class="flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      Inventory health at a glance
+      @if (summary(); as s) {
+        · generated {{ generatedAt() }}
+      }
+    </p>
+  </div>
+</div>
+
+<!-- Loading skeleton -->
+@if (loading()) {
+  <section class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6" aria-busy="true">
+    @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+      <div class="card p-5">
+        <app-skeleton blockClass="h-3 w-20" />
+        <app-skeleton blockClass="mt-3 h-7 w-16" />
+        <app-skeleton blockClass="mt-2 h-3 w-24" />
+      </div>
+    }
+  </section>
+  <section class="mt-6 grid gap-6 xl:grid-cols-3" aria-busy="true">
+    <div class="card xl:col-span-2 p-5">
+      <app-skeleton blockClass="h-4 w-32" />
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <app-skeleton blockClass="mt-4 h-5" [widthPct]="90 - i * 6" />
+      }
+    </div>
+    <div class="card p-5">
+      <app-skeleton blockClass="h-4 w-24" />
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <app-skeleton blockClass="mt-4 h-5" [widthPct]="82 - i * 5" />
+      }
+    </div>
+  </section>
+}
+
+<!-- Error panel with retry -->
+@else if (error(); as err) {
+  <section class="card mt-6 border-rose-200 bg-rose-50/60 p-6" role="alert">
+    <h2 class="text-sm font-semibold text-rose-700">Could not load the dashboard</h2>
+    <p class="mt-1 text-sm text-rose-600">{{ err }}</p>
+    <p class="mt-1 text-xs text-rose-500">
+      Make sure the AssetLite API is running (dev: http://localhost:5060).
+    </p>
+    <button type="button" class="btn btn-primary mt-4" (click)="retry()">Try again</button>
+  </section>
+}
+
+<!-- Summary content -->
+@else if (summary(); as s) {
+  <!-- Stat cards -->
+  <section class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+    @for (card of statCards(); track card.label) {
+      <div class="card p-5">
+        <p class="text-xs font-medium tracking-wide text-slate-500 uppercase">{{ card.label }}</p>
+        <p class="mt-2 text-2xl font-semibold tnums {{ statToneClass(card.tone) }}">{{ card.value }}</p>
+        <p class="mt-1 text-xs text-slate-400">{{ card.hint }}</p>
+      </div>
+    }
+  </section>
+
+  <section class="mt-6 grid items-start gap-6 xl:grid-cols-3">
+    <!-- Per-office table -->
+    <div class="card overflow-hidden xl:col-span-2">
+      <div class="card-header flex items-center justify-between">
+        <h2 class="card-title">Assets by office</h2>
+        <span class="text-xs text-slate-400 tnums">{{ s.offices.length }} offices</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table table-hover tnums">
+          <thead>
+            <tr>
+              <th scope="col">Office</th>
+              <th scope="col" class="text-right">Total</th>
+              <th scope="col" class="text-right">Assigned</th>
+              <th scope="col" class="text-right">In stock</th>
+              <th scope="col" class="text-right">Maintenance</th>
+              <th scope="col" class="text-right">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (office of s.offices; track office.officeId) {
+              <tr>
+                <td>
+                  <span class="font-medium text-slate-800">{{ office.officeName }}</span>
+                  <span class="badge badge-neutral ml-2 font-mono text-[10px]">{{ office.officeCode }}</span>
+                </td>
+                <td class="text-right font-medium">{{ office.totalAssets.toLocaleString() }}</td>
+                <td class="text-right text-sky-700">{{ office.assignedCount.toLocaleString() }}</td>
+                <td class="text-right text-emerald-700">{{ office.inStockCount.toLocaleString() }}</td>
+                <td class="text-right text-amber-700">{{ office.maintenanceCount.toLocaleString() }}</td>
+                <td class="text-right text-slate-500">{{ money(office.totalPurchaseValue) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="py-10 text-center text-sm text-slate-400">No offices registered yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Per-category breakdown -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Assets by category</h2>
+      </div>
+      <ul class="divide-y divide-slate-100">
+        @for (category of s.categories; track category.categoryId) {
+          <li class="px-5 py-3">
+            <div class="flex items-baseline justify-between gap-3">
+              <p class="text-sm font-medium text-slate-800">{{ category.categoryName }}</p>
+              <p class="text-sm text-slate-500 tnums">
+                <span class="font-semibold text-slate-800">{{ category.totalAssets.toLocaleString() }}</span>
+                <span class="text-xs"> total</span>
+              </p>
+            </div>
+            <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                class="h-full rounded-full bg-primary-500"
+                [style.width.%]="(category.totalAssets / maxCategoryTotal()) * 100"
+              ></div>
+            </div>
+            <p class="mt-1.5 text-xs text-slate-400 tnums">
+              {{ category.inStockCount.toLocaleString() }} in stock ·
+              {{ category.assignedCount.toLocaleString() }} assigned ·
+              {{ category.maintenanceCount.toLocaleString() }} in maintenance
+            </p>
+          </li>
+        } @empty {
+          <li class="px-5 py-10 text-center text-sm text-slate-400">No categories registered yet.</li>
+        }
+      </ul>
+    </div>
+  </section>
+}

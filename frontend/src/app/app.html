@@ -1,0 +1,68 @@
+<!-- App shell: sidebar (fixed on lg+, horizontal top bar on small screens, CSS only). -->
+<div class="min-h-screen">
+  <!-- Sidebar / small-screen top bar -->
+  <aside
+    class="fixed inset-x-0 top-0 z-30 border-b border-slate-200 bg-white lg:inset-y-0 lg:left-0 lg:w-64 lg:border-r lg:border-b-0"
+  >
+    <div class="flex h-14 items-center justify-between gap-3 px-4 lg:h-auto lg:flex-col lg:items-stretch lg:gap-6 lg:px-4 lg:py-5">
+      <a routerLink="" class="flex items-center gap-2.5" aria-label="AssetLite home">
+        <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-primary-600 text-sm font-bold text-white">AL</span>
+        <span class="text-base font-semibold tracking-tight text-slate-900">AssetLite</span>
+      </a>
+
+      <!-- Nav: horizontal scroll on small screens, vertical stack on lg+. -->
+      <nav class="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex-none lg:flex-col lg:items-stretch lg:overflow-visible" aria-label="Main navigation">
+        @for (item of navItems; track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="nav-link-active"
+            [routerLinkActiveOptions]="{ exact: item.path === '' }"
+            ariaCurrentWhenActive="page"
+            class="nav-link"
+          >
+            <span class="text-base leading-none text-slate-400" aria-hidden="true">{{ item.icon }}</span>
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Content column -->
+  <div class="flex min-h-screen flex-col pt-14 lg:pl-64">
+    <!-- Topbar with global asset search -->
+    <header class="sticky top-14 z-20 border-b border-slate-200 bg-white/90 backdrop-blur lg:top-0">
+      <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <form class="w-full max-w-xl" role="search" (ngSubmit)="search()">
+          <label for="global-search" class="sr-only">Search assets</label>
+          <div class="relative">
+            <span class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400" aria-hidden="true">⌕</span>
+            <input
+              id="global-search"
+              type="search"
+              name="search"
+              class="input pl-8"
+              placeholder="Search assets by name, tag, model or serial number…"
+              autocomplete="off"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+          </div>
+        </form>
+        <div class="ml-auto hidden items-center gap-2 text-xs font-medium text-slate-400 sm:flex">
+          <span class="size-2 rounded-full bg-emerald-500" aria-hidden="true"></span>
+          Ops console
+        </div>
+      </div>
+    </header>
+
+    <!-- Routed page content -->
+    <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <router-outlet />
+    </main>
+
+    <footer class="border-t border-slate-200 px-4 py-4 text-center text-xs text-slate-400 sm:px-6 lg:px-8">
+      AssetLite · internal asset &amp; inventory console
+    </footer>
+  </div>
+</div>
