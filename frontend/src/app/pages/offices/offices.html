@@ -13,7 +13,14 @@
     role="status"
   >
     <p><span aria-hidden="true">✓</span> {{ message }}</p>
-    <button type="button" class="btn btn-ghost px-2 text-emerald-800" (click)="dismissNotice()" aria-label="Dismiss">✕</button>
+    <button
+      type="button"
+      class="btn btn-ghost px-2 text-emerald-800"
+      (click)="dismissNotice()"
+      aria-label="Dismiss"
+    >
+      ✕
+    </button>
   </div>
 }
 
@@ -29,7 +36,14 @@
           }
         </ul>
       </div>
-      <button type="button" class="btn btn-ghost px-2 text-rose-700" (click)="dismissError()" aria-label="Dismiss error">✕</button>
+      <button
+        type="button"
+        class="btn btn-ghost px-2 text-rose-700"
+        (click)="dismissError()"
+        aria-label="Dismiss error"
+      >
+        ✕
+      </button>
     </div>
   </section>
 }
@@ -80,7 +94,10 @@
         >
           @for (option of rows(); track option.office.id) {
             <option [value]="option.office.id">
-              @for (d of depthDashes(option.depth); track $index) { – }{{ option.office.name }} ({{ option.office.code }})
+              @for (d of depthDashes(option.depth); track $index) {
+                –
+              }
+              {{ option.office.name }} ({{ option.office.code }})
             </option>
           }
         </select>
@@ -90,13 +107,18 @@
       </div>
       <div class="flex items-end gap-2">
         <button type="submit" class="btn btn-primary" [disabled]="busy()">
-          @if (busy()) { Creating… } @else { Create office }
+          @if (busy()) {
+            Creating…
+          } @else {
+            Create office
+          }
         </button>
         <button type="button" class="btn btn-ghost" (click)="openCreate()">Cancel</button>
       </div>
     </div>
     <p class="mt-2 text-xs text-slate-400">
-      Codes are 3-8 uppercase letters/digits and must be unique. Leave the parent as-is to nest under it.
+      Codes are 3-8 uppercase letters/digits and must be unique. Leave the parent as-is to nest
+      under it.
     </p>
   </form>
 }
@@ -118,7 +140,9 @@
     <div class="p-6" role="alert">
       <h2 class="text-sm font-semibold text-rose-700">Could not load offices</h2>
       <p class="mt-1 text-sm text-rose-600">{{ err }}</p>
-      <p class="mt-1 text-xs text-rose-500">Make sure the AssetLite API is running (dev: http://localhost:5060).</p>
+      <p class="mt-1 text-xs text-rose-500">
+        Make sure the AssetLite API is running (dev: http://localhost:5060).
+      </p>
       <button type="button" class="btn btn-primary mt-4" (click)="retry()">Try again</button>
     </div>
   } @else if (rows().length === 0) {
@@ -135,14 +159,29 @@
             class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-5 py-3 transition-colors hover:bg-primary-50/30"
             [style.paddingLeft.rem]="1.25 + row.depth * 1.5"
           >
-            <span class="text-slate-300" aria-hidden="true">@if (row.depth > 0) {└}</span>
+            <span class="text-slate-300" aria-hidden="true">
+              @if (row.depth > 0) {
+                └
+              }
+            </span>
             <span class="font-medium text-slate-800">{{ row.office.name }}</span>
-            <span class="badge badge-neutral font-mono text-[10px]">{{ row.office.code }}</span>
+            <span class="badge badge-neutral font-mono text-[10px]" data-testid="office-code">{{
+              row.office.code
+            }}</span>
             @if (descendantCounts().get(row.office.id); as count) {
-              <span class="text-xs text-slate-400 tnums">{{ count }} sub-office{{ count === 1 ? '' : 's' }}</span>
+              <span class="text-xs text-slate-400 tnums"
+                >{{ count }} sub-office{{ count === 1 ? '' : 's' }}</span
+              >
             }
             <span class="ml-auto">
-              <button type="button" class="btn btn-ghost text-xs" [disabled]="busy()" (click)="openMove(row)">Move</button>
+              <button
+                type="button"
+                class="btn btn-ghost text-xs"
+                [disabled]="busy()"
+                (click)="openMove(row)"
+              >
+                Move
+              </button>
             </span>
           </div>
 
@@ -154,7 +193,9 @@
               (ngSubmit)="submitMove(row)"
             >
               <div>
-                <label class="label" [for]="'move-parent-' + row.office.id">New parent for “{{ row.office.name }}”</label>
+                <label class="label" [for]="'move-parent-' + row.office.id"
+                  >New parent for “{{ row.office.name }}”</label
+                >
                 <select
                   [id]="'move-parent-' + row.office.id"
                   class="select w-full"
@@ -164,7 +205,10 @@
                   <option value="">Pick a new parent…</option>
                   @for (option of moveParentOptions(row); track option.office.id) {
                     <option [value]="option.office.id">
-                      @for (d of depthDashes(option.depth); track $index) { – }{{ option.office.name }} ({{ option.office.code }})
+                      @for (d of depthDashes(option.depth); track $index) {
+                        –
+                      }
+                      {{ option.office.name }} ({{ option.office.code }})
                     </option>
                   }
                 </select>
@@ -173,9 +217,20 @@
                 }
               </div>
               <button type="submit" class="btn btn-primary" [disabled]="busy()">
-                @if (busy()) { Moving… } @else { Confirm move }
+                @if (busy()) {
+                  Moving…
+                } @else {
+                  Confirm move
+                }
               </button>
-              <button type="button" class="btn btn-ghost" [disabled]="busy()" (click)="openMove(row)">Cancel</button>
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="busy()"
+                (click)="openMove(row)"
+              >
+                Cancel
+              </button>
             </form>
           }
         </li>

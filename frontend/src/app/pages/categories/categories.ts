@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, WritableSignal, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { Observable, Subject, catchError, of, startWith, switchMap, tap } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { CategoryDto } from '../../models';
@@ -22,7 +23,7 @@ interface CategoryDraft {
 @Component({
   selector: 'app-categories',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmptyState, TableSkeleton],
+  imports: [FormsModule, EmptyState, TableSkeleton],
   templateUrl: './categories.html',
 })
 export class Categories {

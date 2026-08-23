@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { catchError, of, tap } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { AssetCondition, flattenOfficeTree } from '../../models';
@@ -18,7 +19,7 @@ const CURRENCIES: readonly string[] = ['USD', 'EUR', 'GBP', 'CHF', 'JPY'];
 @Component({
   selector: 'app-asset-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [FormsModule, RouterLink],
   templateUrl: './asset-form.html',
 })
 export class AssetForm {

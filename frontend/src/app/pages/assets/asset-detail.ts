@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, WritableSignal, computed, inject, i
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Observable, Subject, catchError, merge, of, switchMap, tap } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { AssetStatus, flattenOfficeTree } from '../../models';
@@ -43,7 +44,7 @@ const CONFIRM_TEXT: Record<ConfirmedAction, string> = {
 @Component({
   selector: 'app-asset-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, StatusBadge, EmptyState, LoadingSkeleton],
+  imports: [FormsModule, RouterLink, StatusBadge, EmptyState, LoadingSkeleton],
   templateUrl: './asset-detail.html',
   styleUrl: './asset-detail.css',
 })
@@ -66,6 +67,7 @@ export class AssetDetail {
       this.loading.set(true);
       this.error.set(null);
       this.notFound.set(false);
+      this.notice.set(null);
       this.resetActionState();
     }),
     switchMap(() =>
@@ -265,8 +267,8 @@ export class AssetDetail {
           this.confirmAction.set(null);
           options.fieldErrors?.set({});
           options.onDone?.();
-          this.notice.set(options.success);
           this.reload$.next();
+          this.notice.set(options.success);
         }),
         catchError((err) => {
           this.actionBusy.set(false);
@@ -285,7 +287,6 @@ export class AssetDetail {
     this.activePanel.set(null);
     this.confirmAction.set(null);
     this.actionError.set(null);
-    this.notice.set(null);
     this.assignFieldErrors.set({});
     this.transferFieldErrors.set({});
   }

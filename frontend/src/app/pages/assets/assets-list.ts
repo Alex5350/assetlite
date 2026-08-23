@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subject, catchError, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { ASSET_STATUSES, AssetSearchFilters, AssetStatus, flattenOfficeTree } from '../../models';
@@ -33,7 +34,7 @@ function parseFilters(params: Params): AssetSearchFilters {
 @Component({
   selector: 'app-assets-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, StatusBadge, Pagination, EmptyState, TableSkeleton],
+  imports: [FormsModule, RouterLink, StatusBadge, Pagination, EmptyState, TableSkeleton],
   templateUrl: './assets-list.html',
 })
 export class AssetsList {

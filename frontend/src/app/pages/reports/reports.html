@@ -9,10 +9,10 @@
     </p>
   </div>
   <div class="flex flex-wrap items-center gap-2">
-    <a class="btn btn-primary" [href]="excelUrl" download>
+    <a class="btn btn-primary" [href]="excelUrl" data-testid="export-excel" download>
       <span aria-hidden="true">▦</span> Download Excel
     </a>
-    <a class="btn" [href]="pdfUrl" download>
+    <a class="btn" [href]="pdfUrl" data-testid="export-pdf" download>
       <span aria-hidden="true">◎</span> Download PDF
     </a>
     <button type="button" class="btn btn-ghost" (click)="retry()">Refresh</button>
@@ -43,7 +43,9 @@
   <section class="card mt-6 border-rose-200 bg-rose-50/60 p-6" role="alert">
     <h2 class="text-sm font-semibold text-rose-700">Could not load the report</h2>
     <p class="mt-1 text-sm text-rose-600">{{ err }}</p>
-    <p class="mt-1 text-xs text-rose-500">Make sure the AssetLite API is running (dev: http://localhost:5060).</p>
+    <p class="mt-1 text-xs text-rose-500">
+      Make sure the AssetLite API is running (dev: http://localhost:5060).
+    </p>
     <button type="button" class="btn btn-primary mt-4" (click)="retry()">Try again</button>
   </section>
 }
@@ -51,11 +53,16 @@
 <!-- Summary content -->
 @else if (summary(); as s) {
   <!-- Stat cards -->
-  <section class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-7">
+  <section
+    class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-7"
+    data-testid="summary-stats"
+  >
     @for (card of statCards(); track card.label) {
       <div class="card p-5">
         <p class="text-xs font-medium tracking-wide text-slate-500 uppercase">{{ card.label }}</p>
-        <p class="mt-2 text-2xl font-semibold tnums {{ statToneClass(card.tone) }}">{{ card.value }}</p>
+        <p class="mt-2 text-2xl font-semibold tnums {{ statToneClass(card.tone) }}">
+          {{ card.value }}
+        </p>
         <p class="mt-1 text-xs text-slate-400">{{ card.hint }}</p>
       </div>
     }
@@ -81,24 +88,32 @@
             <th scope="col" class="text-right">Purchase value</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody data-testid="offices-body">
           @for (office of s.offices; track office.officeId) {
             <tr>
               <td>
                 <span class="font-medium text-slate-800">{{ office.officeName }}</span>
-                <span class="badge badge-neutral ml-2 font-mono text-[10px]">{{ office.officeCode }}</span>
+                <span class="badge badge-neutral ml-2 font-mono text-[10px]">{{
+                  office.officeCode
+                }}</span>
               </td>
               <td class="text-right font-medium">{{ office.totalAssets.toLocaleString() }}</td>
               <td class="text-right text-sky-700">{{ office.assignedCount.toLocaleString() }}</td>
-              <td class="text-right text-emerald-700">{{ office.inStockCount.toLocaleString() }}</td>
-              <td class="text-right text-amber-700">{{ office.maintenanceCount.toLocaleString() }}</td>
+              <td class="text-right text-emerald-700">
+                {{ office.inStockCount.toLocaleString() }}
+              </td>
+              <td class="text-right text-amber-700">
+                {{ office.maintenanceCount.toLocaleString() }}
+              </td>
               <td class="text-right text-slate-500">{{ office.retiredCount.toLocaleString() }}</td>
               <td class="text-right text-rose-700">{{ office.disposedCount.toLocaleString() }}</td>
               <td class="text-right text-slate-600">{{ money(office.totalPurchaseValue) }}</td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="8" class="py-10 text-center text-sm text-slate-400">No offices registered yet.</td>
+              <td colspan="8" class="py-10 text-center text-sm text-slate-400">
+                No offices registered yet.
+              </td>
             </tr>
           }
         </tbody>
@@ -126,21 +141,31 @@
             <th scope="col" class="text-right">Purchase value</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody data-testid="categories-body">
           @for (category of s.categories; track category.categoryId) {
             <tr>
               <td class="font-medium text-slate-800">{{ category.categoryName }}</td>
               <td class="text-right">{{ category.totalAssets.toLocaleString() }}</td>
               <td class="text-right text-sky-700">{{ category.assignedCount.toLocaleString() }}</td>
-              <td class="text-right text-emerald-700">{{ category.inStockCount.toLocaleString() }}</td>
-              <td class="text-right text-amber-700">{{ category.maintenanceCount.toLocaleString() }}</td>
-              <td class="text-right text-slate-500">{{ category.retiredCount.toLocaleString() }}</td>
-              <td class="text-right text-rose-700">{{ category.disposedCount.toLocaleString() }}</td>
+              <td class="text-right text-emerald-700">
+                {{ category.inStockCount.toLocaleString() }}
+              </td>
+              <td class="text-right text-amber-700">
+                {{ category.maintenanceCount.toLocaleString() }}
+              </td>
+              <td class="text-right text-slate-500">
+                {{ category.retiredCount.toLocaleString() }}
+              </td>
+              <td class="text-right text-rose-700">
+                {{ category.disposedCount.toLocaleString() }}
+              </td>
               <td class="text-right text-slate-600">{{ money(category.totalPurchaseValue) }}</td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="8" class="py-10 text-center text-sm text-slate-400">No categories registered yet.</td>
+              <td colspan="8" class="py-10 text-center text-sm text-slate-400">
+                No categories registered yet.
+              </td>
             </tr>
           }
         </tbody>
@@ -149,7 +174,7 @@
   </section>
 
   <p class="mt-4 text-xs text-slate-400">
-    Exports cover the full register (all {{ s.totalAssets.toLocaleString() }} assets) regardless of the tables above.
-    Summary generated {{ generatedAt() }}.
+    Exports cover the full register (all {{ s.totalAssets.toLocaleString() }} assets) regardless of
+    the tables above. Summary generated {{ generatedAt() }}.
   </p>
 }

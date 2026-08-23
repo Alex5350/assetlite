@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, WritableSignal, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { Observable, Subject, catchError, of, startWith, switchMap, tap } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { FlatOfficeOption, OfficeTreeNodeDto, flattenOfficeTree } from '../../models';
@@ -33,7 +34,7 @@ function countDescendants(node: OfficeTreeNodeDto): number {
 @Component({
   selector: 'app-offices',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmptyState, LoadingSkeleton],
+  imports: [FormsModule, EmptyState, LoadingSkeleton],
   templateUrl: './offices.html',
 })
 export class Offices {
