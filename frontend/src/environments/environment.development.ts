@@ -1,12 +1,12 @@
 /**
  * Development environment.
  *
- * The .NET API is expected at a fixed port (http://localhost:5060) and is
- * CORS-enabled for the dev server, so no proxy configuration or Aspire
- * service-discovery override is needed: we simply call the API directly.
+ * The SPA calls the API same-origin (/api/...) exactly as in production; the Angular dev
+ * server proxies /api to the .NET backend on its fixed port (proxy.conf.json). This keeps
+ * dev and production request paths identical and avoids cross-origin requests entirely.
  */
 export const environment = {
   production: false,
-  /** API base URL — fixed dev port of the .NET backend. */
-  apiUrl: 'http://localhost:5060',
+  /** Same-origin API base; dev-server proxy forwards /api to http://localhost:5060. */
+  apiUrl: '',
 };
