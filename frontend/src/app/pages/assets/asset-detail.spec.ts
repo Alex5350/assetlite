@@ -87,6 +87,12 @@ describe('AssetDetail', () => {
       getAssetByTag: vi.fn(() => overrides.asset$ ?? of(asset())),
       getAssetLabel: vi.fn(() => overrides.label$ ?? of(LABEL)),
       getOfficeTree: vi.fn(() => of(TREE)),
+      getCategories: vi.fn(() =>
+        of([
+          { id: 'cat-laptops', name: 'Laptops', description: null, expectedLifespanMonths: 36 },
+          { id: 'cat-monitors', name: 'Monitors', description: null, expectedLifespanMonths: 60 },
+        ]),
+      ),
       assignAsset: vi.fn(() => of(undefined)),
       returnAsset: vi.fn(() => of(undefined)),
       startMaintenance: vi.fn(() => of(undefined)),
@@ -94,6 +100,7 @@ describe('AssetDetail', () => {
       retireAsset: vi.fn(() => of(undefined)),
       disposeAsset: vi.fn(() => of(undefined)),
       transferAsset: vi.fn(() => of(undefined)),
+      updateAsset: vi.fn(() => of(asset())),
     };
     TestBed.configureTestingModule({
       imports: [AssetDetail],
@@ -135,7 +142,7 @@ describe('AssetDetail', () => {
     const labels = Array.from(toolbar?.querySelectorAll('button') ?? [])
       .map((button) => (button.textContent ?? '').trim())
       .filter((text) => text.length > 0);
-    expect(labels).toEqual(['Resume', 'Retire']);
+    expect(labels).toEqual(['Resume', 'Retire', 'Edit details']);
   });
 
   it('assigns the asset with the form values and refetches the detail', async () => {
@@ -193,5 +200,70 @@ describe('AssetDetail', () => {
     expect(element.textContent).toContain('Asset not found');
     expect(element.textContent).toContain(`No asset with tag ${TAG} exists`);
     expect(element.querySelector('h1')).toBeNull();
+  });
+
+  it('opens the edit panel prefilled with the current details', async () => {
+    const { fixture, element } = createFixture();
+    await fixture.whenStable();
+
+    const toolbar = element.querySelector('[aria-label="Asset actions"]');
+    Array.from(toolbar?.querySelectorAll('button') ?? [])
+      .find((button) => (button.textContent ?? '').trim() === 'Edit details')
+      ?.dispatchEvent(new Event('click'));
+    await fixture.whenStable();
+
+    expect(element.querySelector<HTMLInputElement>('#edit-name-asset-1')?.value).toBe('MacBook Pro 14');
+    expect(element.querySelector<HTMLSelectElement>('#edit-category-asset-1')?.value).toBe('cat-laptops');
+    expect(element.querySelector<HTMLSelectElement>('#edit-condition-asset-1')?.value).toBe('Good');
+    expect(element.querySelector<HTMLInputElement>('#edit-serial-asset-1')?.value).toBe('C02XK1ABJGH5');
+    expect(element.querySelector<HTMLInputElement>('#edit-cost-asset-1')?.value).toBe('2399');
+  });
+
+  it('saves edited details through the API and refetches', async () => {
+    const { fixture, element, api } = createFixture();
+    await fixture.whenStable();
+
+    const toolbar = element.querySelector('[aria-label="Asset actions"]');
+    Array.from(toolbar?.querySelectorAll('button') ?? [])
+      .find((button) => (button.textContent ?? '').trim() === 'Edit details')
+      ?.dispatchEvent(new Event('click'));
+    await fixture.whenStable();
+
+    const nameInput = element.querySelector<HTMLInputElement>('#edit-name-asset-1')!;
+    nameInput.value = 'MacBook Pro 16';
+    nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+    const serialInput = element.querySelector<HTMLInputElement>('#edit-serial-asset-1')!;
+    serialInput.value = 'NEW-SERIAL-1';
+    serialInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    submitForm(element.querySelector('form')!);
+    await fixture.whenStable();
+
+    expect(api.updateAsset).toHaveBeenCalledWith(TAG, {
+      categoryId: 'cat-laptops',
+      name: 'MacBook Pro 16',
+      condition: 'Good',
+      manufacturer: 'Apple',
+      model: 'MBP14/M4/16',
+      serialNumber: 'NEW-SERIAL-1',
+      purchaseDate: '2026-01-15',
+      purchaseCost: 2399,
+      currency: 'USD',
+      notes: undefined,
+    });
+    expect(api.getAssetByTag).toHaveBeenCalledTimes(2);
+    expect(element.textContent).toContain('Details updated.');
+  });
+
+  it('hides the edit action for a disposed asset', async () => {
+    const { fixture, element } = createFixture({ asset$: of(asset({ status: 'Disposed' })) });
+    await fixture.whenStable();
+
+    const toolbar = element.querySelector('[aria-label="Asset actions"]');
+    const labels = Array.from(toolbar?.querySelectorAll('button') ?? []).map((button) =>
+      (button.textContent ?? '').trim(),
+    );
+    expect(labels).not.toContain('Edit details');
+    expect(element.textContent).toContain('no further lifecycle actions are available');
   });
 });

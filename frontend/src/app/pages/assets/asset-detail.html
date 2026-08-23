@@ -216,6 +216,16 @@
             Dispose
           </button>
         }
+        @if (a.status !== 'Disposed') {
+          <button
+            type="button"
+            class="btn"
+            [class.btn-primary]="activePanel() === 'edit'"
+            (click)="openEdit()"
+          >
+            Edit details
+          </button>
+        }
         @if (availableActions().length === 0) {
           <p class="text-sm text-slate-400">
             This asset is disposed — no further lifecycle actions are available.
@@ -312,6 +322,150 @@
             <button type="button" class="btn btn-ghost" (click)="openPanel('transfer')">
               Cancel
             </button>
+          </div>
+        </form>
+      }
+
+      <!-- Edit-details inline form -->
+      @if (activePanel() === 'edit') {
+        <form
+          class="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2 lg:grid-cols-3"
+          (ngSubmit)="submitEdit()"
+        >
+          <div class="sm:col-span-2">
+            <label class="label" [for]="'edit-name-' + a.id">Name *</label>
+            <input
+              [id]="'edit-name-' + a.id"
+              type="text"
+              class="input w-full"
+              autocomplete="off"
+              [value]="editName()"
+              (input)="editName.set($any($event.target).value)"
+            />
+            @if (editFieldErrors()['Name']; as message) {
+              <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+            }
+          </div>
+          <div>
+            <label class="label" [for]="'edit-category-' + a.id">Category *</label>
+            <select
+              [id]="'edit-category-' + a.id"
+              class="select w-full"
+              (change)="editCategoryId.set($any($event.target).value)"
+            >
+              @for (category of categories(); track category.id) {
+                <option [value]="category.id" [selected]="category.id === editCategoryId()">
+                  {{ category.name }}
+                </option>
+              }
+            </select>
+            @if (editFieldErrors()['CategoryId']; as message) {
+              <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+            }
+          </div>
+          <div>
+            <label class="label" [for]="'edit-condition-' + a.id">Condition</label>
+            <select
+              [id]="'edit-condition-' + a.id"
+              class="select w-full"
+              (change)="editCondition.set($any($event.target).value)"
+            >
+              @for (conditionOption of conditions; track conditionOption) {
+                <option [value]="conditionOption" [selected]="conditionOption === editCondition()">
+                  {{ conditionOption }}
+                </option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="label" [for]="'edit-manufacturer-' + a.id">Manufacturer</label>
+            <input
+              [id]="'edit-manufacturer-' + a.id"
+              type="text"
+              class="input w-full"
+              autocomplete="off"
+              [value]="editManufacturer()"
+              (input)="editManufacturer.set($any($event.target).value)"
+            />
+          </div>
+          <div>
+            <label class="label" [for]="'edit-model-' + a.id">Model</label>
+            <input
+              [id]="'edit-model-' + a.id"
+              type="text"
+              class="input w-full"
+              autocomplete="off"
+              [value]="editModel()"
+              (input)="editModel.set($any($event.target).value)"
+            />
+          </div>
+          <div>
+            <label class="label" [for]="'edit-serial-' + a.id">Serial number</label>
+            <input
+              [id]="'edit-serial-' + a.id"
+              type="text"
+              class="input w-full font-mono"
+              autocomplete="off"
+              [value]="editSerialNumber()"
+              (input)="editSerialNumber.set($any($event.target).value)"
+            />
+          </div>
+          <div>
+            <label class="label" [for]="'edit-purchase-date-' + a.id">Purchase date</label>
+            <input
+              [id]="'edit-purchase-date-' + a.id"
+              type="date"
+              class="input w-full"
+              [value]="editPurchaseDate()"
+              (change)="editPurchaseDate.set($any($event.target).value)"
+            />
+          </div>
+          <div>
+            <label class="label" [for]="'edit-cost-' + a.id">Purchase cost</label>
+            <input
+              [id]="'edit-cost-' + a.id"
+              type="number"
+              min="0"
+              step="0.01"
+              class="input w-full tnums"
+              [value]="editPurchaseCost()"
+              (input)="editPurchaseCost.set($any($event.target).value)"
+            />
+            @if (editFieldErrors()['PurchaseCost']; as message) {
+              <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+            }
+          </div>
+          <div>
+            <label class="label" [for]="'edit-currency-' + a.id">Currency</label>
+            <select
+              [id]="'edit-currency-' + a.id"
+              class="select w-full"
+              (change)="editCurrency.set($any($event.target).value)"
+            >
+              @for (code of currencies; track code) {
+                <option [value]="code" [selected]="code === editCurrency()">{{ code }}</option>
+              }
+            </select>
+          </div>
+          <div class="sm:col-span-2 lg:col-span-3">
+            <label class="label" [for]="'edit-notes-' + a.id">Notes</label>
+            <textarea
+              [id]="'edit-notes-' + a.id"
+              class="input w-full"
+              rows="2"
+              [value]="editNotes()"
+              (input)="editNotes.set($any($event.target).value)"
+            ></textarea>
+          </div>
+          <div class="flex items-center gap-2 sm:col-span-2 lg:col-span-3">
+            <button type="submit" class="btn btn-primary" [disabled]="!canSubmitEdit()">
+              @if (actionBusy()) {
+                Saving…
+              } @else {
+                Save changes
+              }
+            </button>
+            <button type="button" class="btn btn-ghost" (click)="openEdit()">Cancel</button>
           </div>
         </form>
       }

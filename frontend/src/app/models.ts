@@ -198,6 +198,23 @@ export interface AssignAssetRequest {
   assigneeEmail: string;
 }
 
+/** Request body for PUT /api/assets/{tag} (UpdateAssetRequest): replaces the
+ * asset's descriptive details. The tag, office, status and assignment history
+ * are owned by other endpoints; disposed assets reject updates. */
+export interface UpdateAssetRequest {
+  categoryId: string;
+  name: string;
+  condition: AssetCondition;
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
+  /** ISO date, 'YYYY-MM-DD'. */
+  purchaseDate?: string;
+  purchaseCost?: number;
+  currency?: string;
+  notes?: string;
+}
+
 /** Request body for POST /api/assets/{tag}/transfer (TransferAssetRequest). */
 export interface TransferAssetRequest {
   targetOfficeId: string;

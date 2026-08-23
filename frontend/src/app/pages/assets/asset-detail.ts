@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, catchError, merge, of, switchMap, tap } from 'rxjs';
 import { ApiService } from '../../core/api.service';
-import { AssetStatus, flattenOfficeTree } from '../../models';
+import { AssetCondition, AssetStatus, UpdateAssetRequest, flattenOfficeTree } from '../../models';
 import { StatusBadge } from '../../shared/status-badge';
 import { EmptyState } from '../../shared/empty-state';
 import { LoadingSkeleton } from '../../shared/loading-skeleton';
@@ -13,10 +13,16 @@ import { ApiProblem, parseProblem } from '../../shared/api-error';
 import { dash, formatDate, formatDateTime, formatMoney } from '../../shared/format';
 
 /** Inline sub-form currently expanded in the action toolbar. */
-type ToolbarPanel = 'assign' | 'transfer' | null;
+type ToolbarPanel = 'assign' | 'transfer' | 'edit' | null;
 
 /** Command awaiting an explicit confirm click. */
 type ConfirmedAction = 'return' | 'maintenance' | 'resume' | 'retire' | 'dispose';
+
+/** Physical conditions, mirroring the API's AssetCondition enum. */
+const CONDITIONS: readonly AssetCondition[] = ['New', 'Good', 'Fair', 'Poor'];
+
+/** Currencies offered for purchase costs. */
+const CURRENCIES: readonly string[] = ['USD', 'EUR', 'GBP', 'CHF', 'JPY'];
 
 /** Lifecycle actions available for each status (mirrors the domain transitions). */
 const ACTIONS_BY_STATUS: Record<AssetStatus, readonly (ConfirmedAction | 'assign' | 'transfer')[]> = {
@@ -116,6 +122,14 @@ export class AssetDetail {
     return flat.filter((option) => option.office.id !== current);
   });
 
+  // --- Reference data for the edit panel -------------------------------------
+  protected readonly categories = toSignal(
+    this.api.getCategories().pipe(catchError(() => of([]))),
+    { initialValue: [] },
+  );
+  protected readonly conditions = CONDITIONS;
+  protected readonly currencies = CURRENCIES;
+
   // --- Action state -----------------------------------------------------------
   protected readonly activePanel = signal<ToolbarPanel>(null);
   protected readonly confirmAction = signal<ConfirmedAction | null>(null);
@@ -131,6 +145,19 @@ export class AssetDetail {
   // Transfer form
   protected readonly targetOfficeId = signal('');
   protected readonly transferFieldErrors = signal<Record<string, string>>({});
+
+  // Edit-details form (prefilled from the loaded asset when the panel opens)
+  protected readonly editName = signal('');
+  protected readonly editManufacturer = signal('');
+  protected readonly editModel = signal('');
+  protected readonly editSerialNumber = signal('');
+  protected readonly editNotes = signal('');
+  protected readonly editCategoryId = signal('');
+  protected readonly editCondition = signal<AssetCondition>('Good');
+  protected readonly editPurchaseDate = signal('');
+  protected readonly editPurchaseCost = signal('');
+  protected readonly editCurrency = signal('USD');
+  protected readonly editFieldErrors = signal<Record<string, string>>({});
 
   protected readonly availableActions = computed(() => {
     const asset = this.asset();
@@ -165,6 +192,28 @@ export class AssetDetail {
     this.confirmAction.set(null);
     this.actionError.set(null);
     this.activePanel.set(this.activePanel() === panel ? null : panel);
+  }
+
+  /** Opens the edit panel prefilled with the asset's current details. */
+  protected openEdit(): void {
+    const asset = this.asset();
+    if (!asset || asset.status === 'Disposed') {
+      return;
+    }
+    this.editName.set(asset.name);
+    this.editManufacturer.set(asset.manufacturer ?? '');
+    this.editModel.set(asset.model ?? '');
+    this.editSerialNumber.set(asset.serialNumber ?? '');
+    this.editNotes.set(asset.notes ?? '');
+    this.editCategoryId.set(asset.categoryId);
+    this.editCondition.set(asset.condition);
+    this.editPurchaseDate.set(asset.purchaseDate ?? '');
+    this.editPurchaseCost.set(asset.purchaseCostAmount != null ? String(asset.purchaseCostAmount) : '');
+    this.editCurrency.set(asset.purchaseCostCurrency ?? 'USD');
+    this.editFieldErrors.set({});
+    this.activePanel.set(this.activePanel() === 'edit' ? null : 'edit');
+    this.confirmAction.set(null);
+    this.actionError.set(null);
   }
 
   protected askConfirm(action: ConfirmedAction): void {
@@ -218,6 +267,53 @@ export class AssetDetail {
       success: 'Asset transferred.',
       fieldErrors: this.transferFieldErrors,
       onDone: () => this.targetOfficeId.set(''),
+    });
+  }
+
+  /** True when the edit form has its required fields and no call is in flight. */
+  protected canSubmitEdit(): boolean {
+    return !this.actionBusy() && this.editName().trim().length > 0 && !!this.editCategoryId();
+  }
+
+  protected submitEdit(): void {
+    const fieldErrors: Record<string, string> = {};
+    const name = this.editName().trim();
+    if (!name) {
+      fieldErrors['Name'] = 'Name is required.';
+    }
+    if (!this.editCategoryId()) {
+      fieldErrors['CategoryId'] = 'Pick a category.';
+    }
+    const costText = this.editPurchaseCost().trim();
+    let purchaseCost: number | undefined;
+    if (costText !== '') {
+      const parsed = Number(costText);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        fieldErrors['PurchaseCost'] = 'Purchase cost must be a non-negative number.';
+      } else {
+        purchaseCost = parsed;
+      }
+    }
+    this.editFieldErrors.set(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) {
+      return;
+    }
+
+    const request: UpdateAssetRequest = {
+      categoryId: this.editCategoryId(),
+      name,
+      condition: this.editCondition(),
+      manufacturer: this.editManufacturer().trim() || undefined,
+      model: this.editModel().trim() || undefined,
+      serialNumber: this.editSerialNumber().trim() || undefined,
+      purchaseDate: this.editPurchaseDate() || undefined,
+      purchaseCost,
+      currency: this.editCurrency() || undefined,
+      notes: this.editNotes().trim() || undefined,
+    };
+    this.runAction(this.api.updateAsset(this.tag(), request), {
+      success: 'Details updated.',
+      fieldErrors: this.editFieldErrors,
     });
   }
 
@@ -289,5 +385,6 @@ export class AssetDetail {
     this.actionError.set(null);
     this.assignFieldErrors.set({});
     this.transferFieldErrors.set({});
+    this.editFieldErrors.set({});
   }
 }

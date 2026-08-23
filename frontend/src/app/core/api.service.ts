@@ -18,6 +18,7 @@ import {
   RegisterAssetRequest,
   SaveCategoryRequest,
   TransferAssetRequest,
+  UpdateAssetRequest,
 } from '../models';
 
 /**
@@ -72,6 +73,11 @@ export class ApiService {
   /** Registers a new asset; the API allocates the sequential tag (POST /api/assets → 201). */
   registerAsset(request: RegisterAssetRequest): Observable<AssetDetailDto> {
     return this.http.post<AssetDetailDto>(this.url('/api/assets'), request);
+  }
+
+  /** Replaces an asset's descriptive details (PUT /api/assets/{tag} → 200). */
+  updateAsset(tag: string, request: UpdateAssetRequest): Observable<AssetDetailDto> {
+    return this.http.put<AssetDetailDto>(this.url(`/api/assets/${encodeURIComponent(tag)}`), request);
   }
 
   /** Assigns (or reassigns) an asset to a person (POST /api/assets/{tag}/assign → 204). */
