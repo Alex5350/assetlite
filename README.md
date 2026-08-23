@@ -16,9 +16,9 @@ PDF**.
 
 | Dashboard | Asset list | Asset label (barcode + QR) |
 |:---:|:---:|:---:|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Assets](docs/screenshots/assets.png) | ![Label](docs/screenshots/label.png) |
+| ![Dashboard](docs/screenshots/shot-dashboard.png) | ![Assets](docs/screenshots/shot-assets.png) | ![Label](docs/screenshots/shot-label.png) |
 
-> This is a personal reference application - a deliberate exercise in shipping a complete,
+> This is a personal reference application: a deliberate exercise in shipping a complete,
 > tested, full-stack product slice. It pairs with
 > [LedgerLite](https://github.com/Alex5350/ledgerlite) (REST/DDD),
 > [LedgerLite Web](https://github.com/Alex5350/ledgerlite-web) (Blazor) and
@@ -27,7 +27,7 @@ PDF**.
 ## Getting started
 
 Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0),
-[Node.js 22+](https://nodejs.org). Nothing else - SQLite migrates and seeds itself
+[Node.js 22+](https://nodejs.org). Nothing else: SQLite migrates and seeds itself
 (7 offices, 7 categories, 45 assets across every lifecycle state).
 
 ```bash
@@ -44,7 +44,7 @@ dotnet run --project src/AssetLite.AppHost
 The Aspire dashboard URL prints in the console (logs, traces and health for every resource,
 SPA included). Prefer running pieces individually? `dotnet run --project src/AssetLite.Api`
 for the API alone, or `cd frontend && npm start` for the SPA alone. The SPA's `aspire` npm
-script honors the `$PORT` variable Aspire injects - `ng serve` won't read it on its own, and
+script honors the `$PORT` variable Aspire injects; `ng serve` won't read it on its own, and
 that port handshake is what lets the Angular dev server live under the orchestrator
 ([ADR 0002](docs/adr/0002-aspire-orchestration.md) tells the full debugging story).
 
@@ -64,12 +64,12 @@ cd frontend && ng test --watch=false # 62 Angular tests (Vitest, no browser need
 | **Domain-Driven Design** | Zero-dependency domain layer: `Asset` aggregate with a full lifecycle state machine and typed error codes, `Office` hierarchy rules behind a domain service, value objects (`AssetTag`, `Money`), domain events, specifications |
 | **Clean Architecture** | Domain ← Application (CQRS handlers, ports) ← Infrastructure (EF Core 10 + SQLite) ← API; the domain tests run on pure data with nothing installed |
 | **ASP.NET Core Web API** | Controllers with RFC 9457 ProblemDetails carrying domain codes (400/404/409), OpenAPI + Scalar, integration tests over `WebApplicationFactory` |
-| **Barcode generation** | Hand-rolled **Code 128 SVG encoder** verified against a computed known vector, plus QR labels encoding the public asset URL - zero barcode dependencies |
-| **Excel & PDF exports** | ClosedXML register with styled totals; QuestPDF landscape report with headers and page numbers - generated server-side, downloadable from the UI |
+| **Barcode generation** | Hand-rolled **Code 128 SVG encoder** verified against a computed known vector, plus QR labels encoding the public asset URL; zero barcode dependencies |
+| **Excel & PDF exports** | ClosedXML register with styled totals; QuestPDF landscape report with headers and page numbers, generated server-side, downloadable from the UI |
 | **Angular 21** | Signals everywhere, zoneless change detection, new control flow, standalone lazy routes, typed models mirrored from the API DTOs |
 | **Tailwind CSS v4** | Design tokens (status colors for the five lifecycle states) and a small component layer over utilities |
-| **Testing** | 339 backend (domain/application/integration incl. byte-level `%PDF`/`PK` export checks) + 62 frontend - the frontend suite caught two real bugs (documented) |
-| **Aspire** | One command runs API, Angular dev server and dashboard - after a documented misdiagnosis and the real fix (ADR 0002) |
+| **Testing** | 339 backend (domain/application/integration incl. byte-level `%PDF`/`PK` export checks) + 62 frontend: the frontend suite caught two real bugs (documented) |
+| **Aspire** | One command runs API, Angular dev server and dashboard, after a documented misdiagnosis and the real fix (ADR 0002) |
 
 ## The process, in brief
 
@@ -78,19 +78,19 @@ version, with every decision and failure, is in the
 [process doc](docs/requirements-and-process.md) and the [ADRs](docs/adr/).
 
 - **Requirements before code.** Eight user-level requirements (R1-R8) were written first;
-  each one shaped a concrete design choice - the lifecycle state machine, the office
+  each one shaped a concrete design choice: the lifecycle state machine, the office
   hierarchy domain service, server-driven paging.
 - **The UI that passed every test but rendered unstyled.** For part of the build, Tailwind
   compiled nothing: the Angular CLI only auto-detects `.postcssrc.json`, and the repo carried
-  a `postcss.config.mjs`. Every spec stayed green because none assert computed styles - the
+  a `postcss.config.mjs`. Every spec stayed green because none assert computed styles; the
   truth came from reading the bytes the browser actually received.
 - **A misdiagnosis, corrected in public.** Aspire's JavaScript-app resource was first
   rejected as an upstream macOS/nvm defect. A minimal repro later, the real cause was a port
-  handshake: Aspire injects `PORT`, `ng serve` ignores it. The reversal - wrong conclusion
-  included - is preserved in [ADR 0002](docs/adr/0002-aspire-orchestration.md).
+  handshake: Aspire injects `PORT`, `ng serve` ignores it. The reversal (wrong conclusion
+  included) is preserved in [ADR 0002](docs/adr/0002-aspire-orchestration.md).
 - **The SPA's tests caught the SPA's bugs.** Forms bound `(ngSubmit)` without `FormsModule`
   (a native submit would have reloaded the page), and a success notice cleared itself before
-  render - both found by the frontend suite before any human clicked.
+  render; both found by the frontend suite before any human clicked.
 - **Contract drift hurts both ways.** Live-testing caught the SPA sending `searchText` where
   the API expected `search`, plus a handful of smaller mismatches; DTOs are now mirrored from
   source and pinned by tests on both sides.
@@ -103,7 +103,7 @@ version, with every decision and failure, is in the
 
 ## Architecture
 
-![How the app runs - Aspire orchestrates the API and the Angular dev server; requests flow from the browser through the SPA's same-origin proxy into the API, down the Clean Architecture stack to SQLite, while telemetry streams to the dashboard](docs/diagrams/app-flow.svg)
+![How the app runs: Aspire orchestrates the API and the Angular dev server; requests flow from the browser through the SPA's same-origin proxy into the API, down the Clean Architecture stack to SQLite, while telemetry streams to the dashboard](docs/diagrams/app-flow.svg)
 
 ```
 src/
@@ -120,15 +120,15 @@ tests/                           # 208 domain · 84 application · 47 integratio
 frontend/src/app/**/*.spec.ts    # 59 Vitest specs
 ```
 
-Decisions and the challenges behind them - controllers vs. minimal APIs, Aspire's scope,
-TypeScript 7 (evaluated and deferred), the pure-domain experiment - are recorded as ADRs in
-[docs/adr/](docs/adr/). The product requirements and design thinking live in
+Decisions and the challenges behind them are recorded as ADRs in [docs/adr/](docs/adr/):
+controllers vs. minimal APIs, Aspire's scope, TypeScript 7 (evaluated and deferred), the
+pure-domain experiment. The product requirements and design thinking live in
 [docs/requirements-and-process.md](docs/requirements-and-process.md).
 
 ## The domain in one paragraph
 
-Every asset carries a unique `AssetTag` and moves through a state machine - InStock, Assigned
-(to a person, with full assignment history), Maintenance, Retired, Disposed - whose illegal
+Every asset carries a unique `AssetTag` and moves through a state machine: InStock, Assigned
+(to a person, with full assignment history), Maintenance, Retired, Disposed. Illegal
 transitions return typed errors that surface unchanged in the UI. Offices form a governed
 hierarchy (HQ → region → site → room, cycles and depth violations rejected by the domain).
 Balances of truth are computed, not drifted: search resolves office scopes (including all
@@ -137,8 +137,8 @@ exports are generated from the same queries the UI reads.
 
 ## Tech stack
 
-- .NET 10 / C# 14 - ASP.NET Core Web API, EF Core 10 + SQLite, ClosedXML, QuestPDF, QRCoder, Aspire 13.5
-- Angular 21 / TypeScript 5.9 - zoneless, signals, Vitest 4, Tailwind CSS 4
+- .NET 10 / C# 14: ASP.NET Core Web API, EF Core 10 + SQLite, ClosedXML, QuestPDF, QRCoder, Aspire 13.5
+- Angular 21 / TypeScript 5.9: zoneless, signals, Vitest 4, Tailwind CSS 4
 - xUnit v3, NSubstitute, WebApplicationFactory
 
 ## License
