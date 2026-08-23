@@ -1,0 +1,62 @@
+/* Label artwork containers: the API returns self-contained SVGs with fixed
+ * width/height attributes — scale them to the container while keeping the
+ * aspect ratio (viewBox is present on both). */
+.label-artwork :is(svg) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* --- Print sheet -----------------------------------------------------------
+ * Shown only while printing (the rest of the app is hidden via print: utilities
+ * on the shell and the page wrapper). Mirrors a sticker label: title text,
+ * barcode, QR and the canonical tag. */
+.label-sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  page-break-inside: avoid;
+}
+
+.label-sheet-title {
+  font-size: 12pt;
+  font-weight: 600;
+  color: #0f172a;
+  text-align: center;
+}
+
+.label-sheet-barcode {
+  width: 3.2in;
+}
+
+.label-sheet-barcode :is(svg) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.label-sheet-qr {
+  width: 1.4in;
+}
+
+.label-sheet-qr :is(svg) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.label-sheet-tag {
+  font-size: 11pt;
+  letter-spacing: 0.08em;
+  color: #334155;
+}
+
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+}

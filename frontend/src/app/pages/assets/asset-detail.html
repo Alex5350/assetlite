@@ -1,0 +1,363 @@
+<!-- App view (hidden while printing; the print sheet below takes over). -->
+<div class="print:hidden">
+  <nav class="flex items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+    <a routerLink="/assets" class="font-medium text-primary-700 hover:underline">Assets</a>
+    <span aria-hidden="true">/</span>
+    <span class="font-mono text-xs text-slate-600">{{ tag() }}</span>
+  </nav>
+
+  <!-- Loading skeleton -->
+  @if (loading()) {
+    <section class="card mt-4 p-6" aria-busy="true">
+      <div class="flex items-start justify-between gap-4">
+        <div class="w-full">
+          <app-skeleton blockClass="h-3 w-24" />
+          <app-skeleton blockClass="mt-3 h-7 w-72" />
+          <app-skeleton blockClass="mt-3 h-4 w-48" />
+        </div>
+        <app-skeleton blockClass="h-6 w-24" />
+      </div>
+      <div class="mt-6 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div>
+            <app-skeleton blockClass="h-3 w-20" />
+            <app-skeleton blockClass="mt-2 h-4 w-32" />
+          </div>
+        }
+      </div>
+    </section>
+    <section class="card mt-6 p-6" aria-busy="true">
+      <app-skeleton blockClass="h-4 w-40" />
+      @for (i of [1, 2, 3]; track i) {
+        <app-skeleton blockClass="mt-4 h-5" [widthPct]="88 - i * 7" />
+      }
+    </section>
+  }
+
+  <!-- Friendly not-found state -->
+  @else if (notFound()) {
+    <section class="card mt-4">
+      <app-empty-state
+        icon="🔍"
+        title="Asset not found"
+        [message]="'No asset with tag ' + tag() + ' exists. It may have been disposed or the tag is mistyped.'"
+      >
+        <a routerLink="/assets" class="btn btn-primary">Back to assets</a>
+      </app-empty-state>
+    </section>
+  }
+
+  <!-- Error panel with retry -->
+  @else if (error(); as err) {
+    <section class="card mt-4 border-rose-200 bg-rose-50/60 p-6" role="alert">
+      <h2 class="text-sm font-semibold text-rose-700">Could not load this asset</h2>
+      <p class="mt-1 text-sm text-rose-600">{{ err }}</p>
+      <p class="mt-1 text-xs text-rose-500">Make sure the AssetLite API is running (dev: http://localhost:5060).</p>
+      <button type="button" class="btn btn-primary mt-4" (click)="retry()">Try again</button>
+    </section>
+  }
+
+  <!-- Detail -->
+  @else if (asset(); as a) {
+    <!-- Header card -->
+    <section class="card mt-4 p-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="min-w-0">
+          <p class="font-mono text-xs font-medium tracking-widest text-primary-700 uppercase">{{ a.tag }}</p>
+          <h1 class="mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{{ a.name }}</h1>
+          <div class="mt-2.5 flex flex-wrap items-center gap-2">
+            <app-status-badge [status]="a.status" />
+            <span class="badge badge-neutral">Condition: {{ a.condition }}</span>
+            @if (a.categoryName; as category) {
+              <span class="badge badge-neutral">{{ category }}</span>
+            }
+            @if (a.officeName; as office) {
+              <span class="badge badge-neutral">{{ office }}</span>
+            }
+          </div>
+        </div>
+        @if (currentAssignee(); as assignee) {
+          <div class="rounded-lg border border-sky-200 bg-sky-50/70 px-4 py-3 text-sm">
+            <p class="text-xs font-medium tracking-wide text-sky-700 uppercase">Current assignee</p>
+            <p class="mt-0.5 font-medium text-slate-800">{{ assignee.name }}</p>
+            @if (assignee.email) {
+              <p class="text-xs text-sky-700">{{ assignee.email }}</p>
+            }
+          </div>
+        }
+      </div>
+
+      <dl class="mt-6 grid gap-x-8 gap-y-4 border-t border-slate-100 pt-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <dt class="text-xs font-medium tracking-wide text-slate-500 uppercase">Manufacturer</dt>
+          <dd class="mt-1 text-sm text-slate-800">{{ dash(a.manufacturer) }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium tracking-wide text-slate-500 uppercase">Model</dt>
+          <dd class="mt-1 text-sm text-slate-800">{{ dash(a.model) }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium tracking-wide text-slate-500 uppercase">Serial number</dt>
+          <dd class="mt-1 font-mono text-sm text-slate-800">{{ dash(a.serialNumber) }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium tracking-wide text-slate-500 uppercase">Purchased</dt>
+          <dd class="mt-1 text-sm text-slate-800">{{ date(a.purchaseDate) }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium tracking-wide text-slate-500 uppercase">Purchase cost</dt>
+          <dd class="mt-1 text-sm tnums text-slate-800">
+            {{ money(a.purchaseCostAmount, a.purchaseCostCurrency ?? 'USD') }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium tracking-wide text-slate-500 uppercase">Registered</dt>
+          <dd class="mt-1 text-sm text-slate-800">{{ dateTime(a.createdAtUtc) }}</dd>
+        </div>
+        @if (a.notes; as notes) {
+          <div class="sm:col-span-2 lg:col-span-3">
+            <dt class="text-xs font-medium tracking-wide text-slate-500 uppercase">Notes</dt>
+            <dd class="mt-1 text-sm whitespace-pre-line text-slate-700">{{ notes }}</dd>
+          </div>
+        }
+      </dl>
+    </section>
+
+    <!-- Success notice -->
+    @if (notice(); as message) {
+      <div
+        class="mt-4 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800"
+        role="status"
+      >
+        <p><span aria-hidden="true">✓</span> {{ message }}</p>
+        <button type="button" class="btn btn-ghost px-2 text-emerald-800" (click)="dismissNotice()" aria-label="Dismiss">✕</button>
+      </div>
+    }
+
+    <!-- Action problem panel -->
+    @if (actionError(); as problem) {
+      <section class="mt-4 rounded-lg border border-rose-200 bg-rose-50/70 p-4" role="alert">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-semibold text-rose-700">{{ problem.title }}</h3>
+            <ul class="mt-1 list-inside list-disc text-sm text-rose-600">
+              @for (message of problem.messages; track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          </div>
+          <button type="button" class="btn btn-ghost px-2 text-rose-700" (click)="dismissError()" aria-label="Dismiss error">✕</button>
+        </div>
+      </section>
+    }
+
+    <!-- Action toolbar -->
+    <section class="card mt-4 p-4" aria-label="Asset actions">
+      <div class="flex flex-wrap items-center gap-2">
+        @if (availableActions().includes('assign')) {
+          <button type="button" class="btn btn-primary" [class.btn-ghost]="activePanel() !== 'assign'" (click)="openPanel('assign')">
+            @if (a.status === 'Assigned') { Reassign } @else { Assign }
+          </button>
+        }
+        @if (availableActions().includes('return')) {
+          <button type="button" class="btn" (click)="askConfirm('return')">Return</button>
+        }
+        @if (availableActions().includes('maintenance')) {
+          <button type="button" class="btn" (click)="askConfirm('maintenance')">Maintenance</button>
+        }
+        @if (availableActions().includes('resume')) {
+          <button type="button" class="btn" (click)="askConfirm('resume')">Resume</button>
+        }
+        @if (availableActions().includes('transfer')) {
+          <button type="button" class="btn" (click)="openPanel('transfer')">Transfer</button>
+        }
+        @if (availableActions().includes('retire')) {
+          <button type="button" class="btn" (click)="askConfirm('retire')">Retire</button>
+        }
+        @if (availableActions().includes('dispose')) {
+          <button type="button" class="btn border-rose-300 text-rose-700 hover:bg-rose-50" (click)="askConfirm('dispose')">Dispose</button>
+        }
+        @if (availableActions().length === 0) {
+          <p class="text-sm text-slate-400">This asset is disposed — no further lifecycle actions are available.</p>
+        }
+        @if (actionBusy()) {
+          <span class="ml-1 text-xs text-slate-400" role="status">Working…</span>
+        }
+      </div>
+
+      <!-- Assign inline form -->
+      @if (activePanel() === 'assign') {
+        <form class="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2" (ngSubmit)="submitAssign()">
+          <div>
+            <label class="label" [for]="'assignee-name-' + a.id">Assignee name</label>
+            <input
+              [id]="'assignee-name-' + a.id"
+              type="text"
+              class="input w-full"
+              placeholder="e.g. Jordan Reyes"
+              autocomplete="off"
+              [value]="assigneeName()"
+              (input)="assigneeName.set($any($event.target).value)"
+            />
+            @if (assignFieldErrors()['AssigneeName']; as message) {
+              <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+            }
+          </div>
+          <div>
+            <label class="label" [for]="'assignee-email-' + a.id">Assignee email</label>
+            <input
+              [id]="'assignee-email-' + a.id"
+              type="email"
+              class="input w-full"
+              placeholder="name@company.com"
+              autocomplete="off"
+              [value]="assigneeEmail()"
+              (input)="assigneeEmail.set($any($event.target).value)"
+            />
+            @if (assignFieldErrors()['AssigneeEmail']; as message) {
+              <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+            }
+          </div>
+          <div class="sm:col-span-2">
+            <button type="submit" class="btn btn-primary" [disabled]="actionBusy()">
+              @if (a.status === 'Assigned') { Reassign } @else { Assign }
+            </button>
+            <button type="button" class="btn btn-ghost" (click)="openPanel('assign')">Cancel</button>
+          </div>
+        </form>
+      }
+
+      <!-- Transfer inline form -->
+      @if (activePanel() === 'transfer') {
+        <form class="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2" (ngSubmit)="submitTransfer()">
+          <div>
+            <label class="label" [for]="'transfer-office-' + a.id">Destination office</label>
+            <select
+              [id]="'transfer-office-' + a.id"
+              class="select w-full"
+              [value]="targetOfficeId()"
+              (change)="targetOfficeId.set($any($event.target).value)"
+            >
+              <option value="">Pick an office…</option>
+              @for (option of transferTargets(); track option.office.id) {
+                <option [value]="option.office.id">
+                  @for (d of depthDashes(option.depth); track $index) { – }{{ option.office.name }} ({{ option.office.code }})
+                </option>
+              }
+            </select>
+            @if (transferFieldErrors()['TargetOfficeId']; as message) {
+              <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+            }
+          </div>
+          <div class="flex items-end gap-2">
+            <button type="submit" class="btn btn-primary" [disabled]="actionBusy()">Transfer</button>
+            <button type="button" class="btn btn-ghost" (click)="openPanel('transfer')">Cancel</button>
+          </div>
+        </form>
+      }
+
+      <!-- Confirm strip -->
+      @if (confirmAction()) {
+        <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+          <p class="text-sm font-medium text-slate-700">{{ confirmText() }}</p>
+          <button type="button" class="btn btn-primary" [disabled]="actionBusy()" (click)="executeConfirmed()">
+            @if (actionBusy()) { Working… } @else { Confirm }
+          </button>
+          <button type="button" class="btn btn-ghost" [disabled]="actionBusy()" (click)="cancelConfirm()">Cancel</button>
+        </div>
+      }
+    </section>
+
+    <div class="mt-6 grid items-start gap-6 xl:grid-cols-3">
+      <!-- Assignment history -->
+      <section class="card overflow-hidden xl:col-span-2">
+        <div class="card-header flex items-center justify-between">
+          <h2 class="card-title">Assignment history</h2>
+          <span class="text-xs text-slate-400 tnums">{{ a.assignments.length }} entries</span>
+        </div>
+        @if (a.assignments.length === 0) {
+          <app-empty-state
+            icon="👥"
+            title="Never assigned"
+            message="This asset has not been assigned to anyone yet."
+          />
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Assignee</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Assigned</th>
+                  <th scope="col">Returned</th>
+                  <th scope="col">State</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (entry of a.assignments; track entry.id) {
+                  @if (entry.returnedAtUtc === null) {
+                    <tr class="bg-sky-50/60">
+                      <td class="font-medium text-slate-800">{{ entry.assigneeName }}</td>
+                      <td class="text-slate-600">{{ dash(entry.assigneeEmail) }}</td>
+                      <td class="tnums">{{ dateTime(entry.assignedAtUtc) }}</td>
+                      <td class="tnums text-slate-400">—</td>
+                      <td><span class="badge badge-assigned">Open</span></td>
+                    </tr>
+                  } @else {
+                    <tr>
+                      <td class="font-medium text-slate-800">{{ entry.assigneeName }}</td>
+                      <td class="text-slate-600">{{ dash(entry.assigneeEmail) }}</td>
+                      <td class="tnums">{{ dateTime(entry.assignedAtUtc) }}</td>
+                      <td class="tnums">{{ dateTime(entry.returnedAtUtc) }}</td>
+                      <td><span class="badge badge-neutral">Closed</span></td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <!-- Label preview -->
+      <section class="card" aria-label="Asset label">
+        <div class="card-header flex items-center justify-between">
+          <h2 class="card-title">Label</h2>
+          @if (label(); as l) {
+            <button type="button" class="btn" (click)="printLabel()">Print label</button>
+          }
+        </div>
+        <div class="p-5">
+          @if (label(); as l) {
+            <div class="space-y-4">
+              <p class="text-sm text-slate-500">{{ l.labelText }}</p>
+              <div class="label-artwork rounded-lg border border-slate-200 bg-white p-3" [innerHTML]="barcodeHtml()"></div>
+              <div class="label-artwork mx-auto w-40 rounded-lg border border-slate-200 bg-white p-3" [innerHTML]="qrHtml()"></div>
+              <p class="text-xs text-slate-400">
+                Code 128 barcode and QR code linking to this asset's page. Print shows only the label.
+              </p>
+            </div>
+          } @else {
+            <div class="space-y-4" aria-busy="true">
+              <app-skeleton blockClass="h-4 w-32" />
+              <app-skeleton blockClass="h-16 w-full" />
+              <app-skeleton blockClass="mx-auto h-40 w-40" />
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</div>
+
+<!-- Print-only label sheet: everything else is hidden via print styles. -->
+@if (label(); as l) {
+  <div class="hidden print:block">
+    <div class="label-sheet">
+      <p class="label-sheet-title">{{ l.labelText }}</p>
+      <div class="label-sheet-barcode" [innerHTML]="barcodeHtml()"></div>
+      <div class="label-sheet-qr" [innerHTML]="qrHtml()"></div>
+      <p class="label-sheet-tag font-mono">{{ l.tag }}</p>
+    </div>
+  </div>
+}
