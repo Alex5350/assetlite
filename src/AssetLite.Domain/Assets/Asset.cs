@@ -424,6 +424,100 @@ public sealed class Asset
         return DomainResult.Success();
     }
 
+    /// <summary>
+    /// Replaces the asset's descriptive details: name, specs, notes, category, condition and
+    /// purchase data. Office moves are a lifecycle concern (<see cref="TransferTo"/>) and the tag,
+    /// status and assignment history are never editable here. Retired assets may still be
+    /// corrected; disposed assets are immutable. Raises
+    /// <see cref="AssetDetailsUpdatedDomainEvent"/> when the details actually change.
+    /// </summary>
+    /// <param name="name">New display name.</param>
+    /// <param name="categoryId">New category (existence is verified by the application layer).</param>
+    /// <param name="condition">New physical condition.</param>
+    /// <param name="purchaseDate">New optional purchase date.</param>
+    /// <param name="purchaseCost">New optional purchase cost.</param>
+    /// <param name="updatedAtUtc">UTC edit moment (from IDateTimeProvider).</param>
+    /// <param name="manufacturer">New optional manufacturer.</param>
+    /// <param name="model">New optional model.</param>
+    /// <param name="serialNumber">New optional serial number.</param>
+    /// <param name="notes">New optional free-form notes.</param>
+    /// <returns>
+    /// A successful result, or a typed error from <see cref="AssetErrors"/>:
+    /// <see cref="AssetErrors.CannotUpdateDisposed"/>, <see cref="AssetErrors.EmptyCategoryId"/>,
+    /// <see cref="AssetErrors.InvalidName"/>, <see cref="AssetErrors.InvalidMetadata"/> or
+    /// <see cref="AssetErrors.InvalidNotes"/>.
+    /// </returns>
+    public DomainResult UpdateDetails(
+        string name,
+        CategoryId categoryId,
+        AssetCondition condition,
+        DateOnly? purchaseDate,
+        Money? purchaseCost,
+        DateTimeOffset updatedAtUtc,
+        string? manufacturer = null,
+        string? model = null,
+        string? serialNumber = null,
+        string? notes = null)
+    {
+        if (Status is AssetStatus.Disposed)
+        {
+            return DomainResult.Failure(AssetErrors.CannotUpdateDisposed);
+        }
+
+        if (categoryId.IsEmpty)
+        {
+            return DomainResult.Failure(AssetErrors.EmptyCategoryId);
+        }
+
+        var normalizedName = (name ?? string.Empty).Trim();
+        if (normalizedName.Length is < 1 or > NameMaxLength)
+        {
+            return DomainResult.Failure(AssetErrors.InvalidName);
+        }
+
+        var normalizedManufacturer = NormalizeOptional(manufacturer);
+        var normalizedModel = NormalizeOptional(model);
+        var normalizedSerialNumber = NormalizeOptional(serialNumber);
+        if (normalizedManufacturer is { Length: > MetadataMaxLength }
+            || normalizedModel is { Length: > MetadataMaxLength }
+            || normalizedSerialNumber is { Length: > MetadataMaxLength })
+        {
+            return DomainResult.Failure(AssetErrors.InvalidMetadata);
+        }
+
+        var normalizedNotes = NormalizeOptional(notes);
+        if (normalizedNotes is { Length: > NotesMaxLength })
+        {
+            return DomainResult.Failure(AssetErrors.InvalidNotes);
+        }
+
+        var changed = Name != normalizedName
+            || CategoryId != categoryId
+            || Condition != condition
+            || PurchaseDate != purchaseDate
+            || !Equals(PurchaseCost, purchaseCost)
+            || Manufacturer != normalizedManufacturer
+            || Model != normalizedModel
+            || SerialNumber != normalizedSerialNumber
+            || Notes != normalizedNotes;
+        if (!changed)
+        {
+            return DomainResult.Success();
+        }
+
+        Name = normalizedName;
+        CategoryId = categoryId;
+        Condition = condition;
+        PurchaseDate = purchaseDate;
+        PurchaseCost = purchaseCost;
+        Manufacturer = normalizedManufacturer;
+        Model = normalizedModel;
+        SerialNumber = normalizedSerialNumber;
+        Notes = normalizedNotes;
+        Raise(new AssetDetailsUpdatedDomainEvent(Id, Tag, updatedAtUtc));
+        return DomainResult.Success();
+    }
+
     private void Raise(IDomainEvent domainEvent) => _events.Add(domainEvent);
 
     private static string? NormalizeOptional(string? value)

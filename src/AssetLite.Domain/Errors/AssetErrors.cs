@@ -114,4 +114,9 @@ public static class AssetErrors
     public static readonly DomainError CannotTransferDisposed = new(
         "Asset.CannotTransferDisposed",
         "A disposed asset cannot be transferred.");
+
+    /// <summary>Details edit attempted on a disposed asset ("Asset.CannotUpdateDisposed").</summary>
+    public static readonly DomainError CannotUpdateDisposed = new(
+        "Asset.CannotUpdateDisposed",
+        "A disposed asset's details can no longer be changed.");
 }

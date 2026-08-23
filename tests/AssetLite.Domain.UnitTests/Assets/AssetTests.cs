@@ -670,3 +670,150 @@ public sealed class AssetTransferTests : AssetTestBase
         Assert.NotEqual(target, asset.OfficeId);
     }
 }
+
+/// <summary>Unit tests for <see cref="Asset.UpdateDetails"/>.</summary>
+public sealed class AssetUpdateDetailsTests : AssetTestBase
+{
+    [Fact]
+    public void UpdateDetails_WithChangedFields_MutatesAssetAndRaisesEvent()
+    {
+        var asset = CreateAsset();
+        var newCategoryId = CategoryId.New();
+        var cost = Money.Create(1499.00m, "EUR").GetValueOrThrow();
+        var purchaseDate = new DateOnly(2025, 6, 1);
+
+        var result = asset.UpdateDetails(
+            "  Dell Latitude 5550  ",
+            newCategoryId,
+            AssetCondition.Fair,
+            purchaseDate,
+            cost,
+            T2,
+            manufacturer: "  Dell  ",
+            model: "Latitude 5550",
+            serialNumber: "   ",
+            notes: "  Replaced the 5540.  ");
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Dell Latitude 5550", asset.Name);
+        Assert.Equal(newCategoryId, asset.CategoryId);
+        Assert.Equal(AssetCondition.Fair, asset.Condition);
+        Assert.Equal(purchaseDate, asset.PurchaseDate);
+        Assert.Equal(cost, asset.PurchaseCost);
+        Assert.Equal("Dell", asset.Manufacturer);
+        Assert.Equal("Latitude 5550", asset.Model);
+        Assert.Null(asset.SerialNumber); // whitespace-only input normalizes to null
+        Assert.Equal("Replaced the 5540.", asset.Notes);
+
+        var @event = Assert.IsType<AssetDetailsUpdatedDomainEvent>(Assert.Single(asset.PullEvents()));
+        Assert.Equal(asset.Id, @event.AssetId);
+        Assert.Equal(asset.Tag, @event.Tag);
+        Assert.Equal(T2, @event.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public void UpdateDetails_WithIdenticalValues_SucceedsWithoutRaisingEvent()
+    {
+        var asset = CreateAsset();
+
+        var result = asset.UpdateDetails(asset.Name, asset.CategoryId, AssetCondition.Good, purchaseDate: null, purchaseCost: null, updatedAtUtc: T2);
+
+        Assert.True(result.IsSuccess);
+        Assert.Empty(asset.PullEvents());
+    }
+
+    [Fact]
+    public void UpdateDetails_KeepsTagOfficeAndStatusUntouched()
+    {
+        var asset = CreateAsset();
+        var officeId = asset.OfficeId;
+        var status = asset.Status;
+
+        var result = asset.UpdateDetails("Renamed asset", CategoryId.New(), AssetCondition.Good, null, null, T2);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(Tag(1), asset.Tag);
+        Assert.Equal(officeId, asset.OfficeId);
+        Assert.Equal(status, asset.Status);
+    }
+
+    [Fact]
+    public void UpdateDetails_OnDisposedAsset_FailsWithTypedError()
+    {
+        var asset = CreateInStatus(AssetStatus.Disposed);
+
+        var result = asset.UpdateDetails("New name", asset.CategoryId, AssetCondition.Good, null, null, T2);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(AssetErrors.CannotUpdateDisposed, result.Error);
+        Assert.Equal("Dell Latitude 5540", asset.Name);
+    }
+
+    [Fact]
+    public void UpdateDetails_OnRetiredAsset_SucceedsAsRecordCorrection()
+    {
+        var asset = CreateInStatus(AssetStatus.Retired);
+
+        var result = asset.UpdateDetails("Corrected name", asset.CategoryId, AssetCondition.Poor, null, null, T2);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Corrected name", asset.Name);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void UpdateDetails_WithBlankName_FailsWithInvalidName(string name)
+    {
+        var asset = CreateAsset();
+
+        var result = asset.UpdateDetails(name, asset.CategoryId, AssetCondition.Good, null, null, T2);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(AssetErrors.InvalidName, result.Error);
+    }
+
+    [Fact]
+    public void UpdateDetails_WithOverlongName_FailsWithInvalidName()
+    {
+        var asset = CreateAsset();
+
+        var result = asset.UpdateDetails(new string('n', Asset.NameMaxLength + 1), asset.CategoryId, AssetCondition.Good, null, null, T2);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(AssetErrors.InvalidName, result.Error);
+    }
+
+    [Fact]
+    public void UpdateDetails_WithOverlongMetadata_FailsWithInvalidMetadata()
+    {
+        var asset = CreateAsset();
+
+        var result = asset.UpdateDetails("Valid name", asset.CategoryId, AssetCondition.Good, null, null, T2, manufacturer: new string('m', Asset.MetadataMaxLength + 1));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(AssetErrors.InvalidMetadata, result.Error);
+    }
+
+    [Fact]
+    public void UpdateDetails_WithOverlongNotes_FailsWithInvalidNotes()
+    {
+        var asset = CreateAsset();
+
+        var result = asset.UpdateDetails("Valid name", asset.CategoryId, AssetCondition.Good, null, null, T2, notes: new string('x', Asset.NotesMaxLength + 1));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(AssetErrors.InvalidNotes, result.Error);
+    }
+
+    [Fact]
+    public void UpdateDetails_WithEmptyCategoryId_Fails()
+    {
+        var asset = CreateAsset();
+
+        var result = asset.UpdateDetails("Valid name", new CategoryId(Guid.Empty), AssetCondition.Good, null, null, T2);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(AssetErrors.EmptyCategoryId, result.Error);
+    }
+}
