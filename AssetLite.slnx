@@ -1,7 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/AssetLite.Api/AssetLite.Api.csproj" />
+    <Project Path="src/AssetLite.AppHost/AssetLite.AppHost.csproj" />
     <Project Path="src/AssetLite.Application/AssetLite.Application.csproj" />
     <Project Path="src/AssetLite.Domain/AssetLite.Domain.csproj" />
     <Project Path="src/AssetLite.Infrastructure/AssetLite.Infrastructure.csproj" />
+    <Project Path="src/AssetLite.ServiceDefaults/AssetLite.ServiceDefaults.csproj" />
   </Folder>
 </Solution>

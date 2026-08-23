@@ -1,0 +1,20 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.5.2">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Aspire 13 hosting: the aspire CLI orchestrates DCP + dashboard. Start the app with
+         `aspire run` (or `dotnet run`, which the CLI attaches to via the backchannel socket).
+         If `aspire setup` has not run yet, the build auto-installs the bundle; the CLI needs an
+         interactive terminal for that one-time setup. -->
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>e23728f3-6aba-4705-a35d-c04be203bfe6</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AssetLite.Api\AssetLite.Api.csproj" />
+  </ItemGroup>
+
+</Project>
