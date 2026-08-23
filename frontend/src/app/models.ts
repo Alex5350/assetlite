@@ -162,15 +162,64 @@ export interface AssetLabel {
   qrSvg: string;
 }
 
-/** Filter + pagination criteria for GET /api/assets (SearchAssetsQuery). */
+/** Filter + pagination criteria for GET /api/assets (SearchAssetsQuery).
+ * Field names mirror the API query params exactly (`search`, `includeDescendants`, …). */
 export interface AssetSearchFilters {
-  searchText?: string;
+  search?: string;
   officeId?: string;
-  includeDescendantOffices?: boolean;
+  includeDescendants?: boolean;
   categoryId?: string;
   status?: AssetStatus;
   page?: number;
   pageSize?: number;
+}
+
+/** Request body for POST /api/assets (RegisterAssetRequest).
+ * Note: request fields are `purchaseCost`/`currency` — the response DTO instead
+ * exposes `purchaseCostAmount`/`purchaseCostCurrency`. */
+export interface RegisterAssetRequest {
+  categoryId: string;
+  officeId: string;
+  name: string;
+  condition: AssetCondition;
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
+  /** ISO date, 'YYYY-MM-DD'. */
+  purchaseDate?: string;
+  purchaseCost?: number;
+  currency?: string;
+  notes?: string;
+}
+
+/** Request body for POST /api/assets/{tag}/assign (AssignAssetRequest). */
+export interface AssignAssetRequest {
+  assigneeName: string;
+  assigneeEmail: string;
+}
+
+/** Request body for POST /api/assets/{tag}/transfer (TransferAssetRequest). */
+export interface TransferAssetRequest {
+  targetOfficeId: string;
+}
+
+/** Request body for POST /api/offices (CreateOfficeRequest). */
+export interface CreateOfficeRequest {
+  name: string;
+  code: string;
+  parentOfficeId?: string | null;
+}
+
+/** Request body for POST /api/offices/{id}/move (MoveOfficeRequest). */
+export interface MoveOfficeRequest {
+  newParentOfficeId: string;
+}
+
+/** Request body for POST/PUT /api/categories (CategoryRequest). */
+export interface SaveCategoryRequest {
+  name: string;
+  description?: string | null;
+  expectedLifespanMonths: number;
 }
 
 /** An office tree node flattened for `<select>` display, carrying its depth. */

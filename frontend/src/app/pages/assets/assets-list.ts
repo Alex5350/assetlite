@@ -16,9 +16,9 @@ const PAGE_SIZE = 20;
 function parseFilters(params: Params): AssetSearchFilters {
   const status = params['status'];
   return {
-    searchText: typeof params['search'] === 'string' && params['search'].trim() ? params['search'].trim() : undefined,
+    search: typeof params['search'] === 'string' && params['search'].trim() ? params['search'].trim() : undefined,
     officeId: typeof params['officeId'] === 'string' && params['officeId'] ? params['officeId'] : undefined,
-    includeDescendantOffices: params['includeDescendants'] === 'true',
+    includeDescendants: params['includeDescendants'] === 'true',
     categoryId: typeof params['categoryId'] === 'string' && params['categoryId'] ? params['categoryId'] : undefined,
     status: ASSET_STATUSES.includes(status) ? (status as AssetStatus) : undefined,
     page: Math.max(1, Number.parseInt(params['page'] ?? '1', 10) || 1),
@@ -67,11 +67,14 @@ export class AssetsList {
   }
 
   // --- Reference data ------------------------------------------------------
-  protected readonly officeOptions = toSignal(
-    this.api.getOfficeTree().pipe(catchError(() => of([]))),
-    { initialValue: [] },
+  protected readonly officeRoot = toSignal(
+    this.api.getOfficeTree().pipe(catchError(() => of(null))),
+    { initialValue: null },
   );
-  protected readonly flatOffices = computed(() => flattenOfficeTree(this.officeOptions()));
+  protected readonly flatOffices = computed(() => {
+    const root = this.officeRoot();
+    return root ? flattenOfficeTree([root]) : [];
+  });
   protected readonly categoryOptions = toSignal(
     this.api.getCategories().pipe(catchError(() => of([]))),
     { initialValue: [] },
