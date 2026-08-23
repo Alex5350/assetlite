@@ -17,4 +17,8 @@
     <ProjectReference Include="..\AssetLite.Api\AssetLite.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.5.2" />
+  </ItemGroup>
+
 </Project>
