@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AssetLite.Application/AssetLite.Application.csproj" />
+    <Project Path="src/AssetLite.Domain/AssetLite.Domain.csproj" />
+  </Folder>
+</Solution>
