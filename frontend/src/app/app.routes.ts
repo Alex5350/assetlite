@@ -12,6 +12,12 @@ export const routes: Routes = [
     title: 'Assets · AssetLite',
   },
   {
+    // Must be declared before 'assets/:tag' so "new" is not matched as a tag.
+    path: 'assets/new',
+    loadComponent: () => import('./pages/assets/asset-form').then((m) => m.AssetForm),
+    title: 'Register asset · AssetLite',
+  },
+  {
     path: 'assets/:tag',
     loadComponent: () => import('./pages/assets/asset-detail').then((m) => m.AssetDetail),
     title: 'Asset detail · AssetLite',
