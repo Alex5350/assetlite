@@ -1,0 +1,199 @@
+<div class="flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Categories</h1>
+    <p class="mt-1 text-sm text-slate-500">Asset classification and expected lifespans</p>
+  </div>
+  <button type="button" class="btn btn-primary" (click)="openCreate()">+ New category</button>
+</div>
+
+<!-- Success notice -->
+@if (notice(); as message) {
+  <div
+    class="mt-4 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800"
+    role="status"
+  >
+    <p><span aria-hidden="true">✓</span> {{ message }}</p>
+    <button type="button" class="btn btn-ghost px-2 text-emerald-800" (click)="dismissNotice()" aria-label="Dismiss">✕</button>
+  </div>
+}
+
+<!-- Action problem panel -->
+@if (actionError(); as problem) {
+  <section class="mt-4 rounded-lg border border-rose-200 bg-rose-50/70 p-4" role="alert">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 class="text-sm font-semibold text-rose-700">{{ problem.title }}</h2>
+        <ul class="mt-1 list-inside list-disc text-sm text-rose-600">
+          @for (message of problem.messages; track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      </div>
+      <button type="button" class="btn btn-ghost px-2 text-rose-700" (click)="dismissError()" aria-label="Dismiss error">✕</button>
+    </div>
+  </section>
+}
+
+<!-- Create form -->
+@if (createOpen()) {
+  <form class="card mt-4 p-4" (ngSubmit)="submitCreate()">
+    <h2 class="card-title">New category</h2>
+    <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <label class="label" for="category-name">Name</label>
+        <input
+          id="category-name"
+          type="text"
+          class="input w-full"
+          placeholder="e.g. Laptops"
+          autocomplete="off"
+          [value]="newName()"
+          (input)="newName.set($any($event.target).value)"
+        />
+        @if (createFieldErrors()['Name']; as message) {
+          <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+        }
+      </div>
+      <div class="sm:col-span-2">
+        <label class="label" for="category-description">Description</label>
+        <input
+          id="category-description"
+          type="text"
+          class="input w-full"
+          placeholder="What belongs in this category"
+          autocomplete="off"
+          [value]="newDescription()"
+          (input)="newDescription.set($any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label class="label" for="category-lifespan">Expected lifespan (months)</label>
+        <input
+          id="category-lifespan"
+          type="number"
+          min="1"
+          step="1"
+          class="input w-full tnums"
+          [value]="newLifespan()"
+          (input)="newLifespan.set($any($event.target).value)"
+        />
+        @if (createFieldErrors()['ExpectedLifespanMonths']; as message) {
+          <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+        }
+      </div>
+    </div>
+    <div class="mt-3 flex items-center gap-2">
+      <button type="submit" class="btn btn-primary" [disabled]="busy()">
+        @if (busy()) { Creating… } @else { Create category }
+      </button>
+      <button type="button" class="btn btn-ghost" (click)="openCreate()">Cancel</button>
+      <p class="ml-auto text-xs text-slate-400">Category names must be unique.</p>
+    </div>
+  </form>
+}
+
+<!-- Category table -->
+<div class="card mt-6 overflow-hidden">
+  @if (loading()) {
+    <div class="overflow-x-auto" aria-busy="true">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col" class="text-right">Lifespan (months)</th>
+            <th scope="col" class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <app-table-skeleton [rows]="5" [cols]="4" />
+        </tbody>
+      </table>
+    </div>
+  } @else if (error(); as err) {
+    <div class="p-6" role="alert">
+      <h2 class="text-sm font-semibold text-rose-700">Could not load categories</h2>
+      <p class="mt-1 text-sm text-rose-600">{{ err }}</p>
+      <p class="mt-1 text-xs text-rose-500">Make sure the AssetLite API is running (dev: http://localhost:5060).</p>
+      <button type="button" class="btn btn-primary mt-4" (click)="retry()">Try again</button>
+    </div>
+  } @else if (categories().length === 0) {
+    <app-empty-state
+      icon="🗂"
+      title="No categories yet"
+      message="Assets need a category — create the first one to start classifying."
+    />
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col" class="text-right">Lifespan (months)</th>
+            <th scope="col" class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (category of categories(); track category.id) {
+            @if (editingId() === category.id) {
+              <!-- Editable row -->
+              <tr class="bg-primary-50/40">
+                <td>
+                  <input
+                    type="text"
+                    class="input w-full"
+                    aria-label="Category name"
+                    [value]="draft().name"
+                    (input)="setDraft({ name: $any($event.target).value })"
+                  />
+                  @if (editFieldErrors()['Name']; as message) {
+                    <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+                  }
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="input w-full"
+                    aria-label="Category description"
+                    [value]="draft().description"
+                    (input)="setDraft({ description: $any($event.target).value })"
+                  />
+                </td>
+                <td class="text-right">
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    class="input w-24 text-right tnums"
+                    aria-label="Expected lifespan in months"
+                    [value]="draft().lifespanMonths"
+                    (input)="setDraft({ lifespanMonths: $any($event.target).value })"
+                  />
+                  @if (editFieldErrors()['ExpectedLifespanMonths']; as message) {
+                    <p class="mt-1 text-xs text-rose-600">{{ message }}</p>
+                  }
+                </td>
+                <td class="text-right whitespace-nowrap">
+                  <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="submitEdit(category)">
+                    @if (busy()) { Saving… } @else { Save }
+                  </button>
+                  <button type="button" class="btn btn-ghost" [disabled]="busy()" (click)="cancelEdit()">Cancel</button>
+                </td>
+              </tr>
+            } @else {
+              <tr>
+                <td class="font-medium text-slate-800">{{ category.name }}</td>
+                <td class="max-w-md text-slate-600">{{ dash(category.description) }}</td>
+                <td class="text-right tnums">{{ category.expectedLifespanMonths }}</td>
+                <td class="text-right">
+                  <button type="button" class="btn btn-ghost text-xs" (click)="startEdit(category)">Edit</button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
