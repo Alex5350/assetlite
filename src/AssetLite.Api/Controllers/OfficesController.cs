@@ -44,7 +44,7 @@ public sealed class OfficesController(RequestDispatcher dispatcher) : ApiControl
             request.ParentOfficeId is { } parentId ? new OfficeId(parentId) : null);
 
         var result = await Dispatcher.CommandAsync<CreateOfficeCommand, OfficeDto>(command, cancellationToken);
-        return From(result, office => StatusCode(StatusCodes.Status201Created, office));
+        return From(result, office => CreatedAtAction(nameof(ListOffices), office));
     }
 
     /// <summary>Re-parents an office (enforces cycle, depth and root rules).</summary>

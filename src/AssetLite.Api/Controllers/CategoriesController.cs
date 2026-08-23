@@ -30,7 +30,7 @@ public sealed class CategoriesController(RequestDispatcher dispatcher) : ApiCont
     {
         var command = new CreateCategoryCommand(request.Name, request.Description, request.ExpectedLifespanMonths);
         var result = await Dispatcher.CommandAsync<CreateCategoryCommand, CategoryDto>(command, cancellationToken);
-        return From(result, category => StatusCode(StatusCodes.Status201Created, category));
+        return From(result, category => CreatedAtAction(nameof(ListCategories), category));
     }
 
     /// <summary>Updates a category's editable fields.</summary>
