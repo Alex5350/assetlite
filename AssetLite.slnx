@@ -7,4 +7,9 @@
     <Project Path="src/AssetLite.Infrastructure/AssetLite.Infrastructure.csproj" />
     <Project Path="src/AssetLite.ServiceDefaults/AssetLite.ServiceDefaults.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AssetLite.Domain.UnitTests/AssetLite.Domain.UnitTests.csproj" />
+    <Project Path="tests/AssetLite.Application.UnitTests/AssetLite.Application.UnitTests.csproj" />
+    <Project Path="tests/AssetLite.Api.IntegrationTests/AssetLite.Api.IntegrationTests.csproj" />
+  </Folder>
 </Solution>
