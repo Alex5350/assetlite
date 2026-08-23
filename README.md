@@ -9,7 +9,8 @@
 Full-stack **IT asset & inventory management**: an ASP.NET Core Web API built with
 Domain-Driven Design and Clean Architecture, an Angular 21 signals-first SPA with Tailwind CSS
 v4, and .NET Aspire orchestration. Track computers, monitors, laptops, tablets and any
-equipment across a **hierarchy of offices** (HQ → regions → sites), generate **scannable
+equipment across a **hierarchy of offices** (HQ → regions → sites), register **and correct**
+assets through their lifecycle, generate **scannable
 barcode + QR labels**, search everything fast, and **export the asset register to Excel and
 PDF**.
 

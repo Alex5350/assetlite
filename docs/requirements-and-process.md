@@ -68,6 +68,16 @@ weeks. The requirements below were written as the product brief for this project
    unshipped; evaluated and deferred with reasons in [ADR 0003](adr/0003-typescript-version.md).
 6. **QuestPDF 2026 API changes** - `PageSizes.A4.Landscape()` became a method and column
    syntax changed; the export code follows the current fluent API (not the older docs).
+7. **Tailwind silently not compiling** - the frontend shipped `postcss.config.mjs` (the
+   config format used by the generic Vite/webpack ecosystem), but the Angular CLI only
+   auto-detects `.postcssrc.json`. Symptom: builds inlined raw `tailwindcss/index.css`
+   without running the Tailwind transform, so browsers received theme variables wrapped in
+   `@theme` at-rules they drop, and zero utility classes - an "unstyled" app that still
+   passed every test, because none of the specs assert computed styles. Diagnosis trail:
+   the served stylesheet contained `@theme default` blocks and no `.flex`/`.btn` rules.
+   Fix: rename the config to `.postcssrc.json`. Lesson recorded: when output looks wrong,
+   inspect the bytes the client actually receives before blaming the client - and a
+   styling smoke check belongs in the verification loop, not only component specs.
 
 ## Development process (commit order)
 
