@@ -54,8 +54,8 @@
 @layer components {
   /* --- Buttons ---------------------------------------------------------- */
   .btn {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-300 bg-white
-      px-3 py-1.5 text-sm font-medium text-slate-700 shadow-xs transition-colors
+    @apply inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-300
+      bg-white px-3 text-sm font-medium text-slate-700 shadow-xs transition-colors
       hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600
       disabled:pointer-events-none disabled:opacity-50;
   }
@@ -121,6 +121,27 @@
     @apply rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 shadow-xs
       placeholder:text-slate-400 focus:border-primary-500 focus:outline-2 focus:outline-offset-0
       focus:outline-primary-600/40 disabled:cursor-not-allowed disabled:bg-slate-50;
+  }
+
+  /* One 36px rail for every control: native selects and date inputs render
+     taller than text inputs at the same padding, which broke row alignment
+     wherever they sat side by side. Fixed height + zero vertical padding
+     makes mixed rows line up exactly; textareas keep their natural sizing. */
+  .input:not(textarea),
+  .select {
+    @apply h-9 py-0;
+  }
+
+  /* Custom chevron so selects match the input box after appearance-none;
+     the native macOS arrow also inset the text differently than inputs.
+     Base64 payload: the raw-SVG data URI survived the dev pipeline but
+     browsers parsed its unencoded spaces inconsistently. */
+  .select {
+    @apply cursor-pointer appearance-none pr-9;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxNiAxNicgZmlsbD0nbm9uZScgc3Ryb2tlPScjOTRhM2I4JyBzdHJva2Utd2lkdGg9JzEuNScgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJz48cGF0aCBkPSdtNCA2IDQgNCA0LTQnLz48L3N2Zz4=");
+    background-repeat: no-repeat;
+    background-position: right 0.625rem center;
+    background-size: 1rem 1rem;
   }
 
   .label {

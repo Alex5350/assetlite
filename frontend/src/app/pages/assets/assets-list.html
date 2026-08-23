@@ -68,12 +68,12 @@
       </select>
     </div>
 
-    <div class="flex items-end gap-2">
-      <div class="flex-1">
-        <label class="label" for="asset-status">Status</label>
+    <div>
+      <label class="label" for="asset-status">Status</label>
+      <div class="flex items-center gap-2">
         <select
           id="asset-status"
-          class="select w-full"
+          class="select w-full flex-1"
           [value]="status()"
           (change)="status.set($any($event.target).value); applyFilters()"
         >
@@ -82,8 +82,8 @@
             <option [value]="statusOption">{{ statusOption }}</option>
           }
         </select>
+        <button type="submit" class="btn btn-primary">Apply</button>
       </div>
-      <button type="submit" class="btn btn-primary">Apply</button>
     </div>
   </div>
 </form>
@@ -149,14 +149,14 @@
           <tbody>
             @for (asset of page.items; track asset.id) {
               <tr class="cursor-pointer" [routerLink]="['/assets', asset.tag]">
-                <td class="font-mono text-xs text-primary-700">{{ asset.tag }}</td>
-                <td class="font-medium text-slate-800">{{ asset.name }}</td>
-                <td>{{ dash(asset.categoryName) }}</td>
-                <td>{{ dash(asset.officeName) }}</td>
-                <td><app-status-badge [status]="asset.status" /></td>
-                <td>{{ dash(asset.currentAssigneeName) }}</td>
-                <td>{{ date(asset.purchaseDate ?? null) }}</td>
-                <td class="text-right">{{ money(asset.purchaseCostAmount ?? null) }}</td>
+              <td class="font-mono text-xs whitespace-nowrap text-primary-700">{{ asset.tag }}</td>
+              <td class="font-medium text-slate-800">{{ asset.name }}</td>
+              <td>{{ dash(asset.categoryName) }}</td>
+              <td>{{ dash(asset.officeName) }}</td>
+              <td><app-status-badge [status]="asset.status" /></td>
+              <td>{{ dash(asset.currentAssigneeName) }}</td>
+              <td class="whitespace-nowrap">{{ date(asset.purchaseDate ?? null) }}</td>
+              <td class="text-right whitespace-nowrap">{{ money(asset.purchaseCostAmount ?? null) }}</td>
               </tr>
             }
           </tbody>
