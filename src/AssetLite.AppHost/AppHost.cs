@@ -8,12 +8,17 @@ var api = builder.AddProject<Projects.AssetLite_Api>("api")
     .WithHttpEndpoint(port: 5060)
     .WithExternalHttpEndpoints();
 
-// The Angular 21 SPA runs via `npm start` in /frontend (ng serve --port 5070) rather than as an
-// Aspire JavaScript-app resource. We tried AddJavaScriptApp with npm run, and with node executing
-// the Angular CLI directly: in both cases the child process exits moments after start under the
-// process monitor, and the HTTP endpoint annotation is rejected ("service-producer annotation is
-// invalid") — a defect in Aspire 13.5.2's JS resources on macOS with nvm-managed Node, documented
-// with evidence in docs/adr/0002-aspire-orchestration.md. Aspire still orchestrates the API end to
-// end (dashboard, telemetry, health); revisit the JS resource when Aspire ships a fix.
+// The Angular 21 SPA as an Aspire JavaScript-app resource. Two things make it work (both were
+// missing in the first attempt, which failed with "Monitor process exited" and an invalid
+// service-producer annotation — see docs/adr/0002-aspire-orchestration.md):
+//   1. the endpoint must be declared on the resource, with `env: "PORT"` so Aspire injects the
+//      port into the npm script's environment;
+//   2. the `aspire` npm script must actually honor $PORT (ng serve does not read PORT on its
+//      own) — it falls back to 5070 so the same script works standalone.
+builder.AddJavaScriptApp("frontend", "../../frontend")
+    .WithRunScript("aspire")
+    .WithHttpEndpoint(port: 5070, env: "PORT")
+    .WithReference(api)
+    .WaitFor(api);
 
 builder.Build().Run();

@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 5070",
+    "aspire": "ng serve --port ${PORT:-5070}",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
