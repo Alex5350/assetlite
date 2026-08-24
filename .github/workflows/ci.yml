@@ -41,4 +41,4 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Frontend tests
-        run: ng test --watch=false
+        run: npm test -- --watch=false
