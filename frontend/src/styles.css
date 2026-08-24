@@ -1,17 +1,20 @@
 @import "tailwindcss";
+/* Self-hosted variable fonts (Fontsource): bundled at build time, nothing is
+   fetched at runtime. Inter for UI text, JetBrains Mono for tags/serials/money. */
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
 
 /* ---------------------------------------------------------------------------
  * AssetLite design tokens — light professional ops / asset-console theme.
  * Neutrals: slate. Primary accent: sky-600. Status palette:
  *   emerald = InStock, sky = Assigned, amber = Maintenance,
  *   slate   = Retired, rose = Disposed.
- * Fonts stay on the system stack (fast, no external fetches).
  * ------------------------------------------------------------------------- */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 
   /* Primary accent (sky) exposed as first-class `primary-*` utilities. */
   --color-primary-50: var(--color-sky-50);
