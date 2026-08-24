@@ -26,10 +26,13 @@ describe('App', () => {
     }
   });
 
-  it('should render the global search input', async () => {
+  it('keeps the shell navigation-only (page headers own search and actions)', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('#global-search')).toBeTruthy();
+    // The assets page already provides search + New asset in context; a global
+    // topbar duplicated both. Guards against the duplicate creeping back.
+    expect(compiled.querySelector('#global-search')).toBeNull();
+    expect(Array.from(compiled.querySelectorAll('a')).some((a) => a.textContent?.includes('New asset'))).toBe(false);
   });
 });

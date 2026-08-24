@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 interface NavItem {
   readonly path: string;
@@ -19,28 +18,17 @@ const NAV_ITEMS: readonly NavItem[] = [
 
 /**
  * Application shell: fixed left sidebar on large screens (collapses to a
- * horizontal top bar below `lg` via CSS only — no JS hamburger), a topbar with
- * global asset search, and the router outlet in a max-w-7xl container.
+ * horizontal top bar below `lg` via CSS only — no JS hamburger) and the router
+ * outlet in a max-w-7xl container. Page headers own their actions (search,
+ * registration, exports); the shell is navigation-only so nothing duplicates.
  */
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
-  private readonly router = inject(Router);
-
   protected readonly navItems = NAV_ITEMS;
-  protected readonly searchQuery = signal('');
-
-  /** Global search: navigates to the assets list with the search query param. */
-  protected search(): void {
-    const query = this.searchQuery().trim();
-    this.router.navigate(['/assets'], {
-      queryParams: { search: query || null, page: null },
-      queryParamsHandling: 'merge',
-    });
-  }
 }
