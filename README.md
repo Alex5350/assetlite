@@ -68,23 +68,55 @@ cd frontend && ng test --watch=false # 62 Angular tests (Vitest, no browser need
 | **Excel & PDF exports** | ClosedXML register with styled totals; QuestPDF landscape report with headers and page numbers - generated server-side, downloadable from the UI |
 | **Angular 21** | Signals everywhere, zoneless change detection, new control flow, standalone lazy routes, typed models mirrored from the API DTOs |
 | **Tailwind CSS v4** | Design tokens (status colors for the five lifecycle states) and a small component layer over utilities |
-| **Testing** | 323 backend (domain/application/integration incl. byte-level `%PDF`/`PK` export checks) + 59 frontend - the frontend suite caught two real bugs (documented) |
+| **Testing** | 339 backend (domain/application/integration incl. byte-level `%PDF`/`PK` export checks) + 62 frontend - the frontend suite caught two real bugs (documented) |
 | **Aspire** | One command runs API, Angular dev server and dashboard - after a documented misdiagnosis and the real fix (ADR 0002) |
 
+## The process, in brief
+
+The commit history is the real build log; this is the short version of how it went. The long
+version, with every decision and failure, is in the
+[process doc](docs/requirements-and-process.md) and the [ADRs](docs/adr/).
+
+- **Requirements before code.** Eight user-level requirements (R1-R8) were written first;
+  each one shaped a concrete design choice - the lifecycle state machine, the office
+  hierarchy domain service, server-driven paging.
+- **The UI that passed every test but rendered unstyled.** For part of the build, Tailwind
+  compiled nothing: the Angular CLI only auto-detects `.postcssrc.json`, and the repo carried
+  a `postcss.config.mjs`. Every spec stayed green because none assert computed styles - the
+  truth came from reading the bytes the browser actually received.
+- **A misdiagnosis, corrected in public.** Aspire's JavaScript-app resource was first
+  rejected as an upstream macOS/nvm defect. A minimal repro later, the real cause was a port
+  handshake: Aspire injects `PORT`, `ng serve` ignores it. The reversal - wrong conclusion
+  included - is preserved in [ADR 0002](docs/adr/0002-aspire-orchestration.md).
+- **The SPA's tests caught the SPA's bugs.** Forms bound `(ngSubmit)` without `FormsModule`
+  (a native submit would have reloaded the page), and a success notice cleared itself before
+  render - both found by the frontend suite before any human clicked.
+- **Contract drift hurts both ways.** Live-testing caught the SPA sending `searchText` where
+  the API expected `search`, plus a handful of smaller mismatches; DTOs are now mirrored from
+  source and pinned by tests on both sides.
+- **Deliberate non-adoptions.** TypeScript 7 (Angular's tsgo bridge unshipped), Angular 22
+  (needs Node ≥ 22.22) and MediatR (a hand-rolled dispatcher is ~60 lines) were each
+  evaluated and declined, with reasons in the ADRs.
+- **Libraries fought back.** QuestPDF's 2026 API reshuffle and EF Core's refusal to
+  translate `string.Contains` over value-converted columns both needed working around
+  (current fluent API; a composable `FromSqlInterpolated` predicate).
+
 ## Architecture
+
+![How the app runs - Aspire orchestrates the API and the Angular dev server; requests flow from the browser through the SPA's same-origin proxy into the API, down the Clean Architecture stack to SQLite, while telemetry streams to the dashboard](docs/diagrams/app-flow.svg)
 
 ```
 src/
 ├── AssetLite.Domain/            # Zero packages: aggregates, value objects,
 │   │                            #   lifecycle state machine, domain events
-├── AssetLite.Application/       # 19 CQRS use cases, ports, ErrorOr boundary mapping
+├── AssetLite.Application/       # 20 CQRS use cases, ports, ErrorOr boundary mapping
 ├── AssetLite.Infrastructure/    # EF Core 10 + SQLite, Code 128 + QR labels,
 │   │                            #   ClosedXML/QuestPDF exports, seeding
 ├── AssetLite.Api/               # Controllers (18 routes), ProblemDetails, OpenAPI
-├── AssetLite.AppHost/           # Aspire orchestration (API + dashboard)
+├── AssetLite.AppHost/           # Aspire orchestration: API + Angular dev server
 └── AssetLite.ServiceDefaults/   # OpenTelemetry, service discovery, resilience
 frontend/                        # Angular 21 SPA: signals, zoneless, Tailwind v4
-tests/                           # 197 domain · 84 application · 42 integration
+tests/                           # 208 domain · 84 application · 47 integration
 frontend/src/app/**/*.spec.ts    # 59 Vitest specs
 ```
 
