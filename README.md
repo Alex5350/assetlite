@@ -14,9 +14,9 @@ assets through their lifecycle, generate **scannable
 barcode + QR labels**, search everything fast, and **export the asset register to Excel and
 PDF**.
 
-| Asset list | Asset label (barcode + QR) |
-|:---:|:---:|
-| ![Assets](docs/screenshots/assets.png) | ![Label](docs/screenshots/label.png) |
+| Dashboard | Asset list | Asset label (barcode + QR) |
+|:---:|:---:|:---:|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Assets](docs/screenshots/assets.png) | ![Label](docs/screenshots/label.png) |
 
 > This is a personal reference application - a deliberate exercise in shipping a complete,
 > tested, full-stack product slice. It pairs with
