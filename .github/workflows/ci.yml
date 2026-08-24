@@ -16,8 +16,14 @@ jobs:
           dotnet-version: 10.0.x
       - name: Verify clean build
         run: dotnet build --configuration Release --warnaserror
+      # The test projects use xunit.v3 with Microsoft.Testing.Platform, which runs
+      # through `dotnet run` — the `dotnet test` VSTest bridge does not pick them up
+      # (it reports zero tests and exits with code 5).
       - name: Run backend tests
-        run: dotnet test --configuration Release --no-build
+        run: |
+          dotnet run --project tests/AssetLite.Domain.UnitTests --no-build -c Release
+          dotnet run --project tests/AssetLite.Application.UnitTests --no-build -c Release
+          dotnet run --project tests/AssetLite.Api.IntegrationTests --no-build -c Release
 
   frontend:
     runs-on: ubuntu-latest
