@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-label="AssetLite application flow - Aspire orchestrates the ASP.NET Core API and the Angular dev server; a browser request flows from the SPA proxy into the API, down through Clean Architecture layers to SQLite; telemetry streams to the Aspire dashboard.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-label="AssetLite application flow: Aspire orchestrates the ASP.NET Core API and the Angular dev server; a browser request flows from the SPA proxy into the API, down through Clean Architecture layers to SQLite; telemetry streams to the Aspire dashboard.">
   <defs>
     <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
       <circle cx="1" cy="1" r="1" fill="#1B2737"/>
@@ -21,6 +21,10 @@
     .flowA  { stroke: #F59E0B; stroke-width: 1.5; fill: none; stroke-dasharray: 4 10; opacity: .65; animation: dashA 1.2s linear infinite; }
     .node   { fill: #0E1620; stroke: #22304A; stroke-width: 1.2; }
     .layer  { fill: #111C2A; stroke: #22304A; stroke-width: 1; }
+    @keyframes pulse { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: .5; } }
+    .pulse { animation: pulse 3s ease-in-out infinite; }
+    .p0 { animation: ride0 1.5s linear infinite; offset-path: path('M570,352 H678'); }
+    @keyframes ride0 { from { offset-distance: 0%; } to { offset-distance: 100%; } }
     @keyframes dashE { to { stroke-dashoffset: -16; } }
     @keyframes dashB { to { stroke-dashoffset: -16; } }
     @keyframes dashA { to { stroke-dashoffset: 16; } }
@@ -30,10 +34,10 @@
   <rect width="1200" height="640" fill="#0B1118"/>
   <rect width="1200" height="640" fill="url(#dots)" opacity=".5"/>
 
-  <text x="40" y="46" class="t-title">AssetLite - how the app runs</text>
+  <text x="40" y="46" class="t-title">AssetLite: how the app runs</text>
   <text x="40" y="68" class="t-sub">one Aspire command · requests in sky · orchestration in emerald · telemetry in amber</text>
   <rect x="880" y="30" width="280" height="26" rx="13" fill="none" stroke="#38BDF8" stroke-opacity=".5"/>
-  <text x="1020" y="47" class="t-chip" text-anchor="middle">dotnet run - everything follows</text>
+  <text x="1020" y="47" class="t-chip" text-anchor="middle">dotnet run: everything follows</text>
 
   <!-- edges -->
   <path class="edge"  d="M290,132 H380" marker-end="url(#arr)"/>
@@ -58,8 +62,7 @@
   <path class="edge"  d="M570,345 H678" marker-end="url(#arr)"/>
   <path class="flowB" d="M570,345 H678"/>
   <text x="624" y="332" class="t-mut" text-anchor="middle">/api proxy → 5060</text>
-  <circle r="3.5" fill="#7DD3FC">
-    <animateMotion path="M570,352 H678" dur="1.5s" repeatCount="indefinite"/>
+  <circle class="packet p0" r="3.5" fill="#7DD3FC">
   </circle>
 
   <path class="edge"  d="M790,420 V458" marker-end="url(#arr)"/>
@@ -79,14 +82,13 @@
   <text x="748" y="128" class="t-mut" text-anchor="middle">OTLP</text>
   <!-- nodes -->
   <g>
-    <rect class="node" x="40" y="100" width="250" height="64" rx="10"/>
+    <rect class="node pulse" x="40" y="100" width="250" height="64" rx="10"/>
     <text x="60" y="126" class="t-node">DEVELOPER</text>
     <text x="60" y="146" class="t-body">dotnet run --project src/AssetLite.AppHost</text>
   </g>
 
   <g>
-    <rect class="node" x="380" y="88" width="270" height="96" rx="12">
-      <animate attributeName="stroke-opacity" values="1;.45;1" dur="3.2s" repeatCount="indefinite"/>
+    <rect class="node pulse" x="380" y="88" width="270" height="96" rx="12">
     </rect>
     <text x="400" y="114" class="t-node">ASPIRE APPHOST · 13.5</text>
     <text x="400" y="134" class="t-body">spawns API + SPA as resources</text>
@@ -95,7 +97,7 @@
   </g>
 
   <g>
-    <rect class="node" x="950" y="88" width="210" height="96" rx="12"/>
+    <rect class="node pulse" x="950" y="88" width="210" height="96" rx="12"/>
     <text x="970" y="114" class="t-node">ASPIRE DASHBOARD</text>
     <text x="970" y="134" class="t-body">logs · traces · metrics</text>
     <text x="970" y="150" class="t-body">resource health &amp; console</text>
@@ -103,15 +105,14 @@
   </g>
 
   <g>
-    <rect class="node" x="40" y="300" width="170" height="84" rx="10"/>
+    <rect class="node pulse" x="40" y="300" width="170" height="84" rx="10"/>
     <text x="60" y="326" class="t-node">BROWSER</text>
     <text x="60" y="346" class="t-body">localhost:5070</text>
     <text x="60" y="362" class="t-body">no CORS · same origin</text>
   </g>
 
   <g>
-    <rect class="node" x="290" y="268" width="280" height="150" rx="12">
-      <animate attributeName="stroke-opacity" values="1;.55;1" dur="2.6s" repeatCount="indefinite"/>
+    <rect class="node pulse" x="290" y="268" width="280" height="150" rx="12">
     </rect>
     <text x="310" y="294" class="t-node">ANGULAR 21 · 5070</text>
     <text x="310" y="314" class="t-body">ng serve --port ${PORT:-5070}</text>
@@ -122,8 +123,7 @@
   </g>
 
   <g>
-    <rect class="node" x="680" y="268" width="240" height="150" rx="12">
-      <animate attributeName="stroke-opacity" values="1;.55;1" dur="2.9s" repeatCount="indefinite"/>
+    <rect class="node pulse" x="680" y="268" width="240" height="150" rx="12">
     </rect>
     <text x="700" y="294" class="t-node">ASP.NET CORE API · 5060</text>
     <text x="700" y="314" class="t-body">controllers · OpenAPI + Scalar</text>
@@ -135,7 +135,7 @@
 
   <!-- Clean Architecture stack -->
   <g>
-    <rect class="node" x="680" y="460" width="240" height="140" rx="12"/>
+    <rect class="node pulse" x="680" y="460" width="240" height="140" rx="12"/>
     <text x="700" y="484" class="t-node">CLEAN ARCHITECTURE</text>
     <rect class="layer" x="700" y="494" width="200" height="26" rx="6"/>
     <text x="800" y="511" class="t-layer" text-anchor="middle">Application · ports</text>
@@ -146,8 +146,7 @@
   </g>
 
   <g>
-    <rect class="node" x="990" y="490" width="170" height="80" rx="10">
-      <animate attributeName="stroke-opacity" values="1;.5;1" dur="3.6s" repeatCount="indefinite"/>
+    <rect class="node pulse" x="990" y="490" width="170" height="80" rx="10">
     </rect>
     <text x="1010" y="516" class="t-node">SQLITE</text>
     <text x="1010" y="536" class="t-body">migrate + seed on boot</text>
