@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-label="AssetLite application flow - Aspire orchestrates the ASP.NET Core API and the Angular dev server; a browser request flows from the SPA proxy into the API, down through Clean Architecture layers to SQLite; telemetry streams to the Aspire dashboard.">
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#1B2737"/>
+    </pattern>
+    <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#3B4A5F"/>
+    </marker>
+  </defs>
+  <style>
+    .t-title { font: 600 20px ui-sans-serif, system-ui, sans-serif; fill: #E2E8F0; }
+    .t-sub   { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #64748B; }
+    .t-node  { font: 600 13px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #E2E8F0; letter-spacing: .5px; }
+    .t-body  { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #94A3B8; }
+    .t-mut   { font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #64748B; }
+    .t-chip  { font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #38BDF8; }
+    .t-layer { font: 600 11px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #CBD5E1; }
+    .edge   { stroke: #1F2B3D; stroke-width: 1.5; fill: none; }
+    .flowE  { stroke: #34D399; stroke-width: 1.5; fill: none; stroke-dasharray: 5 11; opacity: .8; animation: dashE 1.4s linear infinite; }
+    .flowB  { stroke: #38BDF8; stroke-width: 2; fill: none; stroke-dasharray: 5 11; opacity: .85; animation: dashB 1.5s linear infinite; }
+    .flowA  { stroke: #F59E0B; stroke-width: 1.5; fill: none; stroke-dasharray: 4 10; opacity: .65; animation: dashA 1.2s linear infinite; }
+    .node   { fill: #0E1620; stroke: #22304A; stroke-width: 1.2; }
+    .layer  { fill: #111C2A; stroke: #22304A; stroke-width: 1; }
+    @keyframes dashE { to { stroke-dashoffset: -16; } }
+    @keyframes dashB { to { stroke-dashoffset: -16; } }
+    @keyframes dashA { to { stroke-dashoffset: 16; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+
+  <rect width="1200" height="640" fill="#0B1118"/>
+  <rect width="1200" height="640" fill="url(#dots)" opacity=".5"/>
+
+  <text x="40" y="46" class="t-title">AssetLite - how the app runs</text>
+  <text x="40" y="68" class="t-sub">one Aspire command · requests in sky · orchestration in emerald · telemetry in amber</text>
+  <rect x="880" y="30" width="280" height="26" rx="13" fill="none" stroke="#38BDF8" stroke-opacity=".5"/>
+  <text x="1020" y="47" class="t-chip" text-anchor="middle">dotnet run - everything follows</text>
+
+  <!-- edges -->
+  <path class="edge"  d="M290,132 H380" marker-end="url(#arr)"/>
+  <path class="flowE" d="M290,132 H380"/>
+  <text x="335" y="122" class="t-mut" text-anchor="middle">starts</text>
+
+  <path class="edge"  d="M470,184 C470,238 415,222 415,268" marker-end="url(#arr)"/>
+  <path class="flowE" d="M470,184 C470,238 415,222 415,268"/>
+  <text x="452" y="250" class="t-mut" text-anchor="end">npm run aspire · PORT=5070</text>
+
+  <path class="edge"  d="M560,184 C560,238 790,222 790,268" marker-end="url(#arr)"/>
+  <path class="flowE" d="M560,184 C560,238 790,222 790,268"/>
+  <text x="688" y="212" class="t-mut" text-anchor="middle">AddProject · waits for health</text>
+
+  <path class="edge" d="M650,136 H948" marker-end="url(#arr)"/>
+  <text x="800" y="126" class="t-mut" text-anchor="middle">dashboard</text>
+
+  <path class="edge"  d="M210,342 H288" marker-end="url(#arr)"/>
+  <path class="flowB" d="M210,342 H288"/>
+  <text x="249" y="332" class="t-mut" text-anchor="middle">loads UI</text>
+
+  <path class="edge"  d="M570,345 H678" marker-end="url(#arr)"/>
+  <path class="flowB" d="M570,345 H678"/>
+  <text x="624" y="332" class="t-mut" text-anchor="middle">/api proxy → 5060</text>
+  <circle r="3.5" fill="#7DD3FC">
+    <animateMotion path="M570,352 H678" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <path class="edge"  d="M790,420 V458" marker-end="url(#arr)"/>
+  <path class="flowB" d="M790,420 V458" opacity=".5"/>
+  <text x="800" y="443" class="t-mut">use-case handlers</text>
+
+  <path class="edge"  d="M920,530 H988" marker-end="url(#arr)"/>
+  <path class="flowB" d="M920,530 H988" opacity=".5"/>
+  <text x="954" y="520" class="t-mut" text-anchor="middle">EF Core</text>
+
+  <path class="edge"  d="M920,300 C965,295 1000,235 1008,188" marker-end="url(#arr)"/>
+  <path class="flowA" d="M920,300 C965,295 1000,235 1008,188"/>
+  <text x="988" y="252" class="t-mut" text-anchor="middle">OTLP</text>
+
+  <path class="edge"  d="M570,282 C720,148 860,106 946,98" marker-end="url(#arr)"/>
+  <path class="flowA" d="M570,282 C720,148 860,106 946,98" opacity=".4"/>
+  <text x="748" y="128" class="t-mut" text-anchor="middle">OTLP</text>
+  <!-- nodes -->
+  <g>
+    <rect class="node" x="40" y="100" width="250" height="64" rx="10"/>
+    <text x="60" y="126" class="t-node">DEVELOPER</text>
+    <text x="60" y="146" class="t-body">dotnet run --project src/AssetLite.AppHost</text>
+  </g>
+
+  <g>
+    <rect class="node" x="380" y="88" width="270" height="96" rx="12">
+      <animate attributeName="stroke-opacity" values="1;.45;1" dur="3.2s" repeatCount="indefinite"/>
+    </rect>
+    <text x="400" y="114" class="t-node">ASPIRE APPHOST · 13.5</text>
+    <text x="400" y="134" class="t-body">spawns API + SPA as resources</text>
+    <text x="400" y="150" class="t-body">injects PORT · watches health</text>
+    <text x="400" y="170" class="t-body">one command, two processes</text>
+  </g>
+
+  <g>
+    <rect class="node" x="950" y="88" width="210" height="96" rx="12"/>
+    <text x="970" y="114" class="t-node">ASPIRE DASHBOARD</text>
+    <text x="970" y="134" class="t-body">logs · traces · metrics</text>
+    <text x="970" y="150" class="t-body">resource health &amp; console</text>
+    <text x="970" y="170" class="t-body">http://localhost:17xxx</text>
+  </g>
+
+  <g>
+    <rect class="node" x="40" y="300" width="170" height="84" rx="10"/>
+    <text x="60" y="326" class="t-node">BROWSER</text>
+    <text x="60" y="346" class="t-body">localhost:5070</text>
+    <text x="60" y="362" class="t-body">no CORS · same origin</text>
+  </g>
+
+  <g>
+    <rect class="node" x="290" y="268" width="280" height="150" rx="12">
+      <animate attributeName="stroke-opacity" values="1;.55;1" dur="2.6s" repeatCount="indefinite"/>
+    </rect>
+    <text x="310" y="294" class="t-node">ANGULAR 21 · 5070</text>
+    <text x="310" y="314" class="t-body">ng serve --port ${PORT:-5070}</text>
+    <text x="310" y="330" class="t-body">signals · zoneless · Tailwind v4</text>
+    <text x="310" y="346" class="t-body">Inter + JetBrains Mono (self-hosted)</text>
+    <text x="310" y="368" class="t-body">dev proxy: /api → 5060</text>
+    <text x="310" y="384" class="t-body">dashboard · register · edit · labels</text>
+  </g>
+
+  <g>
+    <rect class="node" x="680" y="268" width="240" height="150" rx="12">
+      <animate attributeName="stroke-opacity" values="1;.55;1" dur="2.9s" repeatCount="indefinite"/>
+    </rect>
+    <text x="700" y="294" class="t-node">ASP.NET CORE API · 5060</text>
+    <text x="700" y="314" class="t-body">controllers · OpenAPI + Scalar</text>
+    <text x="700" y="330" class="t-body">CQRS: commands &amp; queries</text>
+    <text x="700" y="346" class="t-body">ProblemDetails · typed codes</text>
+    <text x="700" y="368" class="t-body">Excel + PDF exports</text>
+    <text x="700" y="384" class="t-body">Code 128 + QR labels</text>
+  </g>
+
+  <!-- Clean Architecture stack -->
+  <g>
+    <rect class="node" x="680" y="460" width="240" height="140" rx="12"/>
+    <text x="700" y="484" class="t-node">CLEAN ARCHITECTURE</text>
+    <rect class="layer" x="700" y="494" width="200" height="26" rx="6"/>
+    <text x="800" y="511" class="t-layer" text-anchor="middle">Application · ports</text>
+    <rect class="layer" x="700" y="524" width="200" height="26" rx="6"/>
+    <text x="800" y="541" class="t-layer" text-anchor="middle">Domain · Asset aggregate</text>
+    <rect class="layer" x="700" y="554" width="200" height="26" rx="6"/>
+    <text x="800" y="571" class="t-layer" text-anchor="middle">Infrastructure · EF Core</text>
+  </g>
+
+  <g>
+    <rect class="node" x="990" y="490" width="170" height="80" rx="10">
+      <animate attributeName="stroke-opacity" values="1;.5;1" dur="3.6s" repeatCount="indefinite"/>
+    </rect>
+    <text x="1010" y="516" class="t-node">SQLITE</text>
+    <text x="1010" y="536" class="t-body">migrate + seed on boot</text>
+    <text x="1010" y="552" class="t-body">45 assets · 7 offices</text>
+  </g>
+</svg>
