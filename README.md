@@ -34,23 +34,27 @@ Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0),
 git clone https://github.com/Alex5350/assetlite.git
 cd assetlite
 
-# 1. Backend + Aspire dashboard (terminal 1) - API on http://localhost:5060
-dotnet run --project src/AssetLite.AppHost
+# One-time: install the SPA's dependencies
+cd frontend && npm install && cd ..
 
-# 2. Frontend (terminal 2) - http://localhost:5070
-cd frontend && npm install && npm start
+# One command: API (http://localhost:5060) + SPA (http://localhost:5070) + Aspire dashboard
+dotnet run --project src/AssetLite.AppHost
 ```
 
-The Aspire dashboard URL prints in terminal 1 (logs, traces and health for the API). Prefer
-running the API alone? `dotnet run --project src/AssetLite.Api`. Why the SPA isn't an Aspire
-resource is an honest, evidence-backed story in
-[ADR 0002](docs/adr/0002-aspire-orchestration.md).
+The Aspire dashboard URL prints in the console (logs, traces and health for every resource,
+SPA included). Prefer running pieces individually? `dotnet run --project src/AssetLite.Api`
+for the API alone, or `cd frontend && npm start` for the SPA alone. The SPA's `aspire` npm
+script honors the `$PORT` variable Aspire injects - `ng serve` won't read it on its own, and
+that port handshake is what lets the Angular dev server live under the orchestrator
+([ADR 0002](docs/adr/0002-aspire-orchestration.md) tells the full debugging story).
 
 ### Tests
 
 ```bash
-dotnet test                          # 323 backend tests (no setup)
-cd frontend && ng test --watch=false # 59 Angular tests (Vitest, no browser needed)
+dotnet run --project tests/AssetLite.Domain.UnitTests           # 208 domain tests
+dotnet run --project tests/AssetLite.Application.UnitTests      # 84 application tests
+dotnet run --project tests/AssetLite.Api.IntegrationTests       # 47 API integration tests
+cd frontend && ng test --watch=false # 62 Angular tests (Vitest, no browser needed)
 ```
 
 ## What it demonstrates
@@ -65,7 +69,7 @@ cd frontend && ng test --watch=false # 59 Angular tests (Vitest, no browser need
 | **Angular 21** | Signals everywhere, zoneless change detection, new control flow, standalone lazy routes, typed models mirrored from the API DTOs |
 | **Tailwind CSS v4** | Design tokens (status colors for the five lifecycle states) and a small component layer over utilities |
 | **Testing** | 323 backend (domain/application/integration incl. byte-level `%PDF`/`PK` export checks) + 59 frontend - the frontend suite caught two real bugs (documented) |
-| **Aspire** | AppHost + ServiceDefaults: dashboard, OpenTelemetry, health - with a documented, evidence-based scope decision |
+| **Aspire** | One command runs API, Angular dev server and dashboard - after a documented misdiagnosis and the real fix (ADR 0002) |
 
 ## Architecture
 
