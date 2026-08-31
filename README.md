@@ -1,30 +1,74 @@
 # AssetLite
 
+**Track equipment across an organization's hierarchy, from purchase to retirement: who holds
+each laptop, monitor or tablet, where every asset lives, and what state it is in today.**
+
+[![CI](https://github.com/Alex5350/assetlite/actions/workflows/ci.yml/badge.svg)](https://github.com/Alex5350/assetlite/actions/workflows/ci.yml)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-10/overview)
-[![Angular](https://img.shields.io/badge/Angular-21-dd0031)](https://angular.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6)](https://www.typescriptlang.org)
-[![Aspire](https://img.shields.io/badge/Aspire-13.5-8759ff)](https://aspire.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Full-stack **IT asset & inventory management**: an ASP.NET Core Web API built with
-Domain-Driven Design and Clean Architecture, an Angular 21 signals-first SPA with Tailwind CSS
-v4, and .NET Aspire orchestration. Track computers, monitors, laptops, tablets and any
-equipment across a **hierarchy of offices** (HQ → regions → sites), register **and correct**
-assets through their lifecycle, generate **scannable
-barcode + QR labels**, search everything fast, and **export the asset register to Excel and
-PDF**.
+> **Two ways to read this page.** Not an engineer? Everything below stays in plain language:
+> the problem, the pictures, and what the product delivers; jargon links to the
+> [glossary](docs/GLOSSARY.md). Engineer? The deep dive lives in [TECHNICAL.md](TECHNICAL.md):
+> architecture, request flow, and every major decision mapped back to the business problem it
+> solves.
 
-| Dashboard | Asset list | Asset label (barcode + QR) |
+## The problem
+
+A growing company hands out laptops, monitors and tablets, then keeps hiring, and offices and
+sites multiply. The spreadsheet drifts from reality within weeks: nobody can say for certain
+who holds which device, which cupboard a retired laptop landed in, or whether anyone's records
+still match the equipment actually in the building. IT staff stall an offboarding while they
+hunt a leaver's hardware; office managers answer the same "where is it?" question by walking
+the floor; and when auditors ask for the asset register, the answer is spreadsheet
+archaeology.
+
+AssetLite replaces that spreadsheet with a live registry: every asset tagged, filed under the
+office hierarchy, and followed through its whole lifecycle, with corrections recorded rather
+than erased.
+
+## The product in pictures
+
+| Dashboard: the estate at a glance | Assets: search the register | Label: a scannable barcode + QR |
 |:---:|:---:|:---:|
-| ![Dashboard](docs/screenshots/shot-dashboard.png) | ![Assets](docs/screenshots/shot-assets.png) | ![Label](docs/screenshots/shot-label.png) |
+| ![Dashboard: totals by lifecycle state, purchase value, and breakdowns by office and category](docs/screenshots/shot-dashboard.png) | ![Asset list: search by tag, serial, name or model, filtered by office, category and status](docs/screenshots/shot-assets.png) | ![A printable barcode and QR label for one asset](docs/screenshots/shot-label.png) |
 
-> This is a personal reference application: a deliberate exercise in shipping a complete,
-> tested, full-stack product slice. It pairs with
-> [LedgerLite](https://github.com/Alex5350/ledgerlite) (REST/DDD),
-> [LedgerLite Web](https://github.com/Alex5350/ledgerlite-web) (Blazor) and
-> [LeaveLite MCP](https://github.com/Alex5350/leavelite-mcp) as a set.
+## What it delivers
 
-## Getting started
+- **A live registry across the whole hierarchy.** Assets are filed under offices organized
+  from HQ through regions to sites, so a search can cover one site or everything beneath a
+  region, and reports roll up by office and category.
+- **A lifecycle that keeps history.** Each asset moves in stock, assigned, maintenance,
+  retired, disposed; hand-outs and hand-backs are recorded rather than overwritten, so "who
+  had what, when" always has an answer.
+- **A scannable label for every asset.** A barcode and QR label can be printed per asset; a
+  phone scan of the QR code opens that asset's page.
+- **Search and exports an auditor can actually use.** Search by tag, serial, name or model,
+  filtered by office (including sub-offices), category and status; the full register exports
+  to Excel and PDF, generated from the same data the screens read.
+
+## How the engineering solves it
+
+Plain-terms bridge; each item links to the full story in [TECHNICAL.md](TECHNICAL.md).
+
+- **Nothing should stop a retired laptop being handed out again.** The lifecycle states are
+  rules in the code, not conventions in a wiki: a move the lifecycle does not allow is
+  rejected with a reason, instead of accepted and discovered later.
+  ([how the tech solves it](TECHNICAL.md#how-the-tech-solves-the-business-problem))
+- **"Everything under this region" should not be a spreadsheet formula.** The office
+  hierarchy is built into the model itself, so scoping a search to a site and rolling totals
+  up the tree are native operations, not report-writing exercises.
+  ([the architecture](TECHNICAL.md#architecture))
+- **Evaluating the whole system should take one command.** A single command starts the API,
+  the web app and a dashboard with logs and health for both, so a reviewer's first hour goes
+  into the product, not into setup.
+  ([Aspire orchestration](TECHNICAL.md#how-the-tech-solves-the-business-problem))
+- **"Error" is not an answer.** When a rule refuses a change, the refusal travels from the
+  rule to the screen unchanged, so staff see why (this asset is retired, that office move
+  would create a loop) in plain words.
+  ([request flow](TECHNICAL.md#request-and-data-flow))
+
+<details>
+<summary><b>For developers: quickstart</b></summary>
 
 Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0),
 [Node.js 22+](https://nodejs.org). Nothing else: SQLite migrates and seeds itself
@@ -48,7 +92,7 @@ script honors the `$PORT` variable Aspire injects; `ng serve` won't read it on i
 that port handshake is what lets the Angular dev server live under the orchestrator
 ([ADR 0002](docs/adr/0002-aspire-orchestration.md) tells the full debugging story).
 
-### Tests
+Tests:
 
 ```bash
 dotnet run --project tests/AssetLite.Domain.UnitTests           # 208 domain tests
@@ -57,89 +101,21 @@ dotnet run --project tests/AssetLite.Api.IntegrationTests       # 47 API integra
 cd frontend && ng test --watch=false # 62 Angular tests (Vitest, no browser needed)
 ```
 
-## What it demonstrates
+</details>
 
-| Area | Highlights |
-|---|---|
-| **Domain-Driven Design** | Zero-dependency domain layer: `Asset` aggregate with a full lifecycle state machine and typed error codes, `Office` hierarchy rules behind a domain service, value objects (`AssetTag`, `Money`), domain events, specifications |
-| **Clean Architecture** | Domain ← Application (CQRS handlers, ports) ← Infrastructure (EF Core 10 + SQLite) ← API; the domain tests run on pure data with nothing installed |
-| **ASP.NET Core Web API** | Controllers with RFC 9457 ProblemDetails carrying domain codes (400/404/409), OpenAPI + Scalar, integration tests over `WebApplicationFactory` |
-| **Barcode generation** | Hand-rolled **Code 128 SVG encoder** verified against a computed known vector, plus QR labels encoding the public asset URL; zero barcode dependencies |
-| **Excel & PDF exports** | ClosedXML register with styled totals; QuestPDF landscape report with headers and page numbers, generated server-side, downloadable from the UI |
-| **Angular 21** | Signals everywhere, zoneless change detection, new control flow, standalone lazy routes, typed models mirrored from the API DTOs |
-| **Tailwind CSS v4** | Design tokens (status colors for the five lifecycle states) and a small component layer over utilities |
-| **Testing** | 339 backend (domain/application/integration incl. byte-level `%PDF`/`PK` export checks) + 62 frontend: the frontend suite caught two real bugs (documented) |
-| **Aspire** | One command runs API, Angular dev server and dashboard, after a documented misdiagnosis and the real fix (ADR 0002) |
+## Documentation
 
-## The process, in brief
+| Document | What it covers | Audience |
+|---|---|---|
+| [TECHNICAL.md](TECHNICAL.md) | Architecture, request flow, decisions mapped to business problems, stack rationale, testing | Engineers |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Every term this repo uses, in plain English and precisely | Everyone |
+| [docs/requirements-and-process.md](docs/requirements-and-process.md) | The problem as user requirements, and the build narrative | Engineers |
+| [docs/adr/](docs/adr/) | Four architecture decision records | Engineers |
 
-The commit history is the real build log; this is the short version of how it went. The long
-version, with every decision and failure, is in the
-[process doc](docs/requirements-and-process.md) and the [ADRs](docs/adr/).
-
-- **Requirements before code.** Eight user-level requirements (R1-R8) were written first;
-  each one shaped a concrete design choice: the lifecycle state machine, the office
-  hierarchy domain service, server-driven paging.
-- **The UI that passed every test but rendered unstyled.** For part of the build, Tailwind
-  compiled nothing: the Angular CLI only auto-detects `.postcssrc.json`, and the repo carried
-  a `postcss.config.mjs`. Every spec stayed green because none assert computed styles; the
-  truth came from reading the bytes the browser actually received.
-- **A misdiagnosis, corrected in public.** Aspire's JavaScript-app resource was first
-  rejected as an upstream macOS/nvm defect. A minimal repro later, the real cause was a port
-  handshake: Aspire injects `PORT`, `ng serve` ignores it. The reversal (wrong conclusion
-  included) is preserved in [ADR 0002](docs/adr/0002-aspire-orchestration.md).
-- **The SPA's tests caught the SPA's bugs.** Forms bound `(ngSubmit)` without `FormsModule`
-  (a native submit would have reloaded the page), and a success notice cleared itself before
-  render; both found by the frontend suite before any human clicked.
-- **Contract drift hurts both ways.** Live-testing caught the SPA sending `searchText` where
-  the API expected `search`, plus a handful of smaller mismatches; DTOs are now mirrored from
-  source and pinned by tests on both sides.
-- **Deliberate non-adoptions.** TypeScript 7 (Angular's tsgo bridge unshipped), Angular 22
-  (needs Node ≥ 22.22) and MediatR (a hand-rolled dispatcher is ~60 lines) were each
-  evaluated and declined, with reasons in the ADRs.
-- **Libraries fought back.** QuestPDF's 2026 API reshuffle and EF Core's refusal to
-  translate `string.Contains` over value-converted columns both needed working around
-  (current fluent API; a composable `FromSqlInterpolated` predicate).
-
-## Architecture
-
-![How the app runs: Aspire orchestrates the API and the Angular dev server; requests flow from the browser through the SPA's same-origin proxy into the API, down the Clean Architecture stack to SQLite, while telemetry streams to the dashboard](docs/diagrams/app-flow.svg)
-
-```
-src/
-├── AssetLite.Domain/            # Zero packages: aggregates, value objects,
-│   │                            #   lifecycle state machine, domain events
-├── AssetLite.Application/       # 20 CQRS use cases, ports, ErrorOr boundary mapping
-├── AssetLite.Infrastructure/    # EF Core 10 + SQLite, Code 128 + QR labels,
-│   │                            #   ClosedXML/QuestPDF exports, seeding
-├── AssetLite.Api/               # Controllers (18 routes), ProblemDetails, OpenAPI
-├── AssetLite.AppHost/           # Aspire orchestration: API + Angular dev server
-└── AssetLite.ServiceDefaults/   # OpenTelemetry, service discovery, resilience
-frontend/                        # Angular 21 SPA: signals, zoneless, Tailwind v4
-tests/                           # 208 domain · 84 application · 47 integration
-frontend/src/app/**/*.spec.ts    # 59 Vitest specs
-```
-
-Decisions and the challenges behind them are recorded as ADRs in [docs/adr/](docs/adr/):
-controllers vs. minimal APIs, Aspire's scope, TypeScript 7 (evaluated and deferred), the
-pure-domain experiment. The product requirements and design thinking live in
-[docs/requirements-and-process.md](docs/requirements-and-process.md).
-
-## The domain in one paragraph
-
-Every asset carries a unique `AssetTag` and moves through a state machine: InStock, Assigned
-(to a person, with full assignment history), Maintenance, Retired, Disposed. Illegal
-transitions return typed errors that surface unchanged in the UI. Offices form a governed
-hierarchy (HQ → region → site → room, cycles and depth violations rejected by the domain).
-Balances of truth are computed, not drifted: search resolves office scopes (including all
-descendants) in the application layer; reports aggregate by office and category; the register
-exports are generated from the same queries the UI reads.
-
-## Tech stack
-
-- .NET 10 / C# 14: ASP.NET Core Web API, EF Core 10 + SQLite, ClosedXML, QuestPDF, QRCoder, Aspire 13.5
-- Angular 21 / TypeScript 5.9: zoneless, signals, Vitest 4, Tailwind CSS 4
-- xUnit v3, NSubstitute, WebApplicationFactory
+A personal reference application: a deliberate exercise in shipping a complete, tested,
+full-stack product slice. It pairs with [LedgerLite](https://github.com/Alex5350/ledgerlite)
+(REST/DDD), [LedgerLite Web](https://github.com/Alex5350/ledgerlite-web) (Blazor) and
+[LeaveLite MCP](https://github.com/Alex5350/leavelite-mcp) as a set.
 
 ## License
 
